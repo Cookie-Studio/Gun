@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>cn.cookiestudio</groupId>
+    <artifactId>Gun</artifactId>
+    <version>1.0.6</version>
+
+    <properties>
+        <maven.compiler.source>8</maven.compiler.source>
+        <maven.compiler.target>8</maven.compiler.target>
+    </properties>
+
+    <repositories>
+        <repository>
+            <id>opencollab-repo-release</id>
+            <url>https://repo.opencollab.dev/maven-releases/</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>opencollab-repo-snapshot</id>
+            <url>https://repo.opencollab.dev/maven-snapshots/</url>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>ck</id>
+            <url>http://nz.ipyvps.com:1111/repository/cookie-studio/</url>
+        </repository>
+    </repositories>
+
+    <dependencies>
+<!--        &lt;!&ndash; Nukkit &ndash;&gt;-->
+<!--        <dependency>-->
+<!--            <groupId>cn.nukkit</groupId>-->
+<!--            <artifactId>nukkit</artifactId>-->
+<!--            <version>1.0-SNAPSHOT</version>-->
+<!--            <scope>provided</scope>-->
+<!--        </dependency>-->
+
+        <!-- PN -->
+        <dependency>
+            <groupId>org.powernukkit</groupId>
+            <artifactId>powernukkit</artifactId>
+            <version>1.5.1.0-PN</version>
+        </dependency>
+
+        <!-- BN -->
+        <dependency>
+            <groupId>com.blocklynukkit</groupId>
+            <artifactId>BlocklyNukkit</artifactId>
+            <version>1.0.0</version>
+        </dependency>
+
+        <!-- Annotations -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.18.4</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- CustomParticle -->
+        <dependency>
+            <groupId>cn.cookiestudio</groupId>
+            <artifactId>CustomParticle</artifactId>
+            <version>1.0.1</version>
+        </dependency>
+
+        <!--    Easy4Form   -->
+        <dependency>
+            <groupId>cn.cookiestudio</groupId>
+            <artifactId>Easy4Form</artifactId>
+            <version>1.0.3</version>
+        </dependency>
+    </dependencies>
+
+</project>
