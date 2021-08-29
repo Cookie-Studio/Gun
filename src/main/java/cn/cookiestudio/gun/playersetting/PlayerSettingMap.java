@@ -13,6 +13,7 @@ import java.util.Map;
 @Builder
 public class PlayerSettingMap {
     private FireMode fireMode = FireMode.AUTO;
+    private boolean openTrajectoryParticle = false;
     public enum FireMode{
         AUTO,
         MANUAL
@@ -21,6 +22,7 @@ public class PlayerSettingMap {
         Map<String,Object> map = new HashMap<>();
 
         map.put("fireMode",this.fireMode.ordinal());
+        map.put("openTrajectoryParticle",this.openTrajectoryParticle);
 
         return map;
     }

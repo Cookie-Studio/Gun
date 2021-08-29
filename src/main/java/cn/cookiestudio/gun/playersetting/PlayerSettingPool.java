@@ -54,6 +54,7 @@ public class PlayerSettingPool {
             PlayerSettingMap entry = PlayerSettingMap
                     .builder()
                     .fireMode(PlayerSettingMap.FireMode.AUTO)
+                    .openTrajectoryParticle(false)
                     .build();
             settings.put(name,entry);
             return entry;
@@ -61,6 +62,7 @@ public class PlayerSettingPool {
         PlayerSettingMap e = PlayerSettingMap
                 .builder()
                 .fireMode(PlayerSettingMap.FireMode.values()[config.getInt(key + ".fireMode")])
+                .openTrajectoryParticle(config.getBoolean(key + ".openTrajectoryParticle"))
                 .build();
         settings.put(name,e);
         return e;

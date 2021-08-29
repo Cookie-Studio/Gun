@@ -1,9 +1,11 @@
 package cn.cookiestudio.gun.guns;
 
+import cn.cookiestudio.customparticle.CustomParticlePlugin;
 import cn.cookiestudio.customparticle.customparticle.CustomParticle;
 import cn.cookiestudio.customparticle.math.BVector3;
 import cn.cookiestudio.customparticle.math.MathUtil;
 import cn.cookiestudio.customparticle.util.Identifier;
+import cn.cookiestudio.gun.GunPlugin;
 import cn.cookiestudio.gun.guns.achieve.ItemGunM3;
 import cn.cookiestudio.gun.network.AnimateEntityPacket;
 import cn.cookiestudio.gun.network.CameraShakePacket;
@@ -15,7 +17,6 @@ import cn.nukkit.entity.Entity;
 import cn.nukkit.event.entity.EntityDamageByEntityEvent;
 import cn.nukkit.event.entity.EntityDamageEvent;
 import cn.nukkit.level.Location;
-import cn.nukkit.level.ParticleEffect;
 import cn.nukkit.level.Position;
 import cn.nukkit.level.format.FullChunk;
 import cn.nukkit.level.particle.DestroyBlockParticle;
@@ -28,6 +29,7 @@ import lombok.Setter;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.stream.Collectors;
 
 @Getter
 @Setter
@@ -97,16 +99,24 @@ public class GunData {
             player.setSprinting(false);
             player.sendMovementSpeed(player.getMovementSpeed());
         }
+        Player[] showParticlePlayers = Server
+                .getInstance()
+                .getOnlinePlayers()
+                .values()
+                .stream()
+                .filter(p -> GunPlugin.getInstance().getPlayerSettingPool().getSettings().get(p.getName()).isOpenTrajectoryParticle())
+                .collect(Collectors.toList())
+                .toArray(new Player[0]);
         if (gunType instanceof ItemGunM3){
             Location location = player.clone();
             for (int i = 1;i <= 10;i++){
                 player.yaw += random.nextInt(11) - 5;
                 player.pitch += random.nextInt(11) - 5;
-                fireParticle.play(player, false);
+                fireParticle.play(player, false,showParticlePlayers);
                 player.setRotation(location.getYaw(),location.getPitch());
             }
         }else {
-            fireParticle.play(player, false);
+            fireParticle.play(player, false,showParticlePlayers);
         }
         if (recoil != 0) {
             Vector3 vector3 = getRecoilPos(player, recoil);
@@ -236,9 +246,8 @@ public class GunData {
                 hitPos.getLevel().addParticle(new DestroyBlockParticle(hitPos, Block.get(152)));
             }
             map.put(particle, ammoParticleList);
-            List<Position> list = new ArrayList<>();
-            list.add(MathUtil.getFaceDirection(pos1, 0.8).addToPosition(pos1).add(0, 1.62, 0));
-            map.put("minecraft:eyeofender_death_explode_particle",list);
+            Position fireSmokePos = MathUtil.getFaceDirection(pos1, 0.8).addToPosition(pos1).add(0, 1.62, 0);
+            CustomParticlePlugin.getInstance().getParticleSender().sendParticle("minecraft:eyeofender_death_explode_particle",fireSmokePos);
             return map;
         }
     }

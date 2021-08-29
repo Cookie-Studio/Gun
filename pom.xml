@@ -6,7 +6,7 @@
 
     <groupId>cn.cookiestudio</groupId>
     <artifactId>Gun</artifactId>
-    <version>1.0.6</version>
+    <version>1.1.0</version>
 
     <properties>
         <maven.compiler.source>8</maven.compiler.source>
@@ -75,7 +75,7 @@
         <dependency>
             <groupId>cn.cookiestudio</groupId>
             <artifactId>CustomParticle</artifactId>
-            <version>1.0.1</version>
+            <version>1.0.4</version>
         </dependency>
 
         <!--    Easy4Form   -->
