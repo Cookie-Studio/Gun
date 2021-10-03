@@ -11,7 +11,6 @@ import cn.nukkit.event.entity.EntityDamageEvent;
 import cn.nukkit.event.entity.EntityDeathEvent;
 import cn.nukkit.event.player.*;
 import cn.nukkit.item.Item;
-import cn.nukkit.item.customitem.ItemCustom;
 import cn.nukkit.level.GameRule;
 import cn.nukkit.nbt.tag.CompoundTag;
 import cn.nukkit.network.protocol.AnimatePacket;
@@ -25,7 +24,7 @@ import java.util.stream.Collectors;
 
 @Setter
 @Getter
-public abstract class ItemGunBase extends ItemCustom {
+public abstract class ItemGunBase extends Item {
 
     protected GunData gunData;
 

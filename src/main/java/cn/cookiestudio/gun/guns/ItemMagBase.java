@@ -1,9 +1,8 @@
 package cn.cookiestudio.gun.guns;
 
 import cn.nukkit.item.Item;
-import cn.nukkit.item.customitem.ItemCustom;
 
-public abstract class ItemMagBase extends ItemCustom {
+public abstract class ItemMagBase extends Item {
     public ItemMagBase(int id) {
         super(id);
     }
