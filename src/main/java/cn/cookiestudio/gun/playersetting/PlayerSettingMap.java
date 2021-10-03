@@ -12,18 +12,23 @@ import java.util.Map;
 @Setter
 @Builder
 public class PlayerSettingMap {
+
     private FireMode fireMode = FireMode.AUTO;
     private boolean openTrajectoryParticle = false;
-    public enum FireMode{
-        AUTO,
-        MANUAL
-    }
+    private boolean openMuzzleParticle = true;
+
     public Map<String,Object> getMap(){
         Map<String,Object> map = new HashMap<>();
 
         map.put("fireMode",this.fireMode.ordinal());
         map.put("openTrajectoryParticle",this.openTrajectoryParticle);
+        map.put("openMuzzleParticle",this.openMuzzleParticle);
 
         return map;
+    }
+
+    public enum FireMode{
+        AUTO,
+        MANUAL
     }
 }

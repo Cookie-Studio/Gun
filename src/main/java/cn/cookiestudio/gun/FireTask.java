@@ -27,6 +27,12 @@ public class FireTask extends PluginTask {
                     firing.remove(event.getPlayer());
                 }
             }
+
+            @EventHandler
+            public void onPlayerInteractFiring(PlayerItemHeldEvent event){
+                if (firing.containsKey(event.getPlayer()))
+                    firing.put(event.getPlayer(),false);
+            }
         },GunPlugin.getInstance());
         Server.getInstance().getScheduler().scheduleRepeatingTask(this,1);
     }

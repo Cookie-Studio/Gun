@@ -55,6 +55,7 @@ public class PlayerSettingPool {
                     .builder()
                     .fireMode(PlayerSettingMap.FireMode.AUTO)
                     .openTrajectoryParticle(false)
+                    .openMuzzleParticle(true)
                     .build();
             settings.put(name,entry);
             return entry;
@@ -63,6 +64,7 @@ public class PlayerSettingPool {
                 .builder()
                 .fireMode(PlayerSettingMap.FireMode.values()[config.getInt(key + ".fireMode")])
                 .openTrajectoryParticle(config.getBoolean(key + ".openTrajectoryParticle"))
+                .openMuzzleParticle(config.getBoolean(key + ".openMuzzleParticle"))
                 .build();
         settings.put(name,e);
         return e;

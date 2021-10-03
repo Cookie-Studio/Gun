@@ -11,8 +11,10 @@ import cn.nukkit.event.entity.EntityDamageEvent;
 import cn.nukkit.event.entity.EntityDeathEvent;
 import cn.nukkit.event.player.*;
 import cn.nukkit.item.Item;
+import cn.nukkit.item.customitem.ItemCustom;
 import cn.nukkit.level.GameRule;
 import cn.nukkit.nbt.tag.CompoundTag;
+import cn.nukkit.network.protocol.AnimatePacket;
 import cn.nukkit.potion.Effect;
 import lombok.Getter;
 import lombok.Setter;
@@ -23,7 +25,7 @@ import java.util.stream.Collectors;
 
 @Setter
 @Getter
-public abstract class ItemGunBase extends Item {
+public abstract class ItemGunBase extends ItemCustom {
 
     protected GunData gunData;
 
@@ -39,7 +41,15 @@ public abstract class ItemGunBase extends Item {
                         itemGun.getGunData().addWalkingSlownessEffect(player);
                     }
                     if (!GunPlugin.getInstance().getCoolDownTimer().isCooling(player) || GunPlugin.getInstance().getCoolDownTimer().getCoolDownMap().get(player).getType() != CoolDownTimer.Type.RELOAD) {
-                        player.sendActionBar("<" + itemGun.getAmmoCount() + "/" + itemGun.getGunData().getMagSize() + ">", 0, 1, 0);
+                        if (GunPlugin.getInstance().getPlayerSettingPool().getSettings().containsKey(player.getName()) && GunPlugin.getInstance().getPlayerSettingPool().getSettings().get(player.getName()).getFireMode() == PlayerSettingMap.FireMode.AUTO) {
+                            if (!GunPlugin.getInstance().getFireTask().firing(player)) {
+                                player.sendActionBar("<" + itemGun.getAmmoCount() + "/" + itemGun.getGunData().getMagSize() + ">\n§dAUTO MODE: §cOFF");
+                            } else {
+                                player.sendActionBar("<" + itemGun.getAmmoCount() + "/" + itemGun.getGunData().getMagSize() + ">\n§dAUTO MODE: §aON");
+                            }
+                        }else{
+                            player.sendActionBar("<" + itemGun.getAmmoCount() + "/" + itemGun.getGunData().getMagSize() + ">");
+                        }
                         return;
                     }
                     CoolDownTimer.CoolDown coolDown = GunPlugin.getInstance().getCoolDownTimer().getCoolDownMap().get(player);
@@ -97,7 +107,7 @@ public abstract class ItemGunBase extends Item {
             if (player.getGamemode() != 1) {
                 itemGun.setAmmoCount(itemGun.getAmmoCount() - 1);
             }
-            player.getInventory().setItemInHand(itemGun);
+            player.getInventory().setItem(player.getInventory().getHeldItemIndex(),itemGun,false);
             GunPlugin.getInstance().getCoolDownTimer().addCoolDown(player, (int) (gunData.getFireCoolDown() * 20), () -> {}, () -> CoolDownTimer.Operator.NO_ACTION, CoolDownTimer.Type.FIRECOOLDOWN);
             return GunInteractAction.FIRE;
         }
@@ -107,7 +117,7 @@ public abstract class ItemGunBase extends Item {
                 gunData.reloadFinish(player);
                 ItemGunBase itemGun = (ItemGunBase)player.getInventory().getItemInHand();
                 itemGun.setAmmoCount(gunData.getMagSize());
-                player.getInventory().setItemInHand(itemGun);//because some unknown reasons,if don't do that there will be some problems...fuck you nukkit
+                player.getInventory().setItem(player.getInventory().getHeldItemIndex(),itemGun,false);//because some unknown reasons,if don't do that there will be some problems...fuck you nukkit
                 for (Map.Entry<Integer,Item> entry : player.getInventory().getContents().entrySet()){
                     Item item = entry.getValue();
                     int slot = entry.getKey();
@@ -149,8 +159,8 @@ public abstract class ItemGunBase extends Item {
 
     private static class Listener implements cn.nukkit.event.Listener {
         @EventHandler
-        public void onPlayerInteractItem(PlayerInteractEvent event) {
-            if (event.getAction() != PlayerInteractEvent.Action.PHYSICAL && event.getPlayer().getInventory().getItemInHand() instanceof ItemGunBase) {
+        public void onPlayerInteractItem(PlayerAnimationEvent event) {
+            if (event.getAnimationType() == AnimatePacket.Action.SWING_ARM && event.getPlayer().getInventory().getItemInHand() instanceof ItemGunBase) {
                 if (GunPlugin.getInstance().getPlayerSettingPool().getSettings().get(event.getPlayer().getName()).getFireMode() == PlayerSettingMap.FireMode.AUTO){
                     GunPlugin.getInstance().getFireTask().changeState(event.getPlayer());
                 }else {

@@ -222,7 +222,7 @@ public class GunData {
                 ammoMap.put(i, ammoPos);
                 if (i % 4 == 0) ammoParticleList.add(ammoPos);
             }
-            ammoMap.entrySet().stream().parallel().forEach(entry -> {
+            ammoMap.entrySet().stream().forEach(entry -> {
                 FullChunk chunk = entry.getValue().getChunk();
                 if (chunk == null)
                     return;
@@ -238,8 +238,10 @@ public class GunData {
                     }
                 });
             });
-            hitMap.keySet().stream().parallel().forEach(entity -> {
-                entity.attack(new EntityDamageByEntityEvent(player,entity, EntityDamageEvent.DamageCause.ENTITY_ATTACK,(float)hitDamage,0F));
+            hitMap.keySet().stream().forEach(entity -> {
+                EntityDamageByEntityEvent event = new EntityDamageByEntityEvent(player,entity, EntityDamageEvent.DamageCause.ENTITY_ATTACK,(float)hitDamage,0F);
+                event.setAttackCooldown(0);
+                entity.attack(event);
                 hitParticleList.add(ammoMap.get(hitMap.get(entity)));
             });
             for (Position hitPos : hitParticleList) {
@@ -247,7 +249,7 @@ public class GunData {
             }
             map.put(particle, ammoParticleList);
             Position fireSmokePos = MathUtil.getFaceDirection(pos1, 0.8).addToPosition(pos1).add(0, 1.62, 0);
-            CustomParticlePlugin.getInstance().getParticleSender().sendParticle("minecraft:eyeofender_death_explode_particle",fireSmokePos);
+            if (GunPlugin.getInstance().getPlayerSettingPool().getSettings().get(player.getName()).isOpenMuzzleParticle()) CustomParticlePlugin.getInstance().getParticleSender().sendParticle("minecraft:eyeofender_death_explode_particle",fireSmokePos);
             return map;
         }
     }

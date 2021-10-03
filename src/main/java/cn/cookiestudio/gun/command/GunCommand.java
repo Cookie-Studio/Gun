@@ -13,7 +13,6 @@ import cn.nukkit.form.element.*;
 import cn.nukkit.form.response.FormResponseCustom;
 import cn.nukkit.form.response.FormResponseSimple;
 import cn.nukkit.level.ParticleEffect;
-import org.luaj.vm2.ast.Str;
 
 import java.sql.Array;
 import java.util.ArrayList;
@@ -103,6 +102,7 @@ public class GunCommand extends Command {
             list.add(PlayerSettingMap.FireMode.MANUAL.name());
             custom.addElement(new ElementDropdown("开火模式:",list,settings.getFireMode().ordinal()));
             custom.addElement(new ElementToggle("打开弹道粒子:",settings.isOpenTrajectoryParticle()));
+            custom.addElement(new ElementToggle("打开开火烟雾:",settings.isOpenMuzzleParticle()));
             custom.setResponseAction((e) -> {
                 if (e.getResponse() == null)
                     return;
@@ -113,6 +113,7 @@ public class GunCommand extends Command {
                     settings.setFireMode(PlayerSettingMap.FireMode.MANUAL);
                 }
                 settings.setOpenTrajectoryParticle(response.getToggleResponse(1));
+                settings.setOpenMuzzleParticle(response.getToggleResponse(2));
                 GunPlugin.getInstance().getPlayerSettingPool().write(player.getName(),settings);
                 player.sendMessage("§aSucceed!");
             });
