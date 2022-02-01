@@ -13,6 +13,7 @@ import cn.nukkit.event.player.*;
 import cn.nukkit.item.Item;
 import cn.nukkit.item.ItemApple;
 import cn.nukkit.item.ItemEdible;
+import cn.nukkit.item.ItemSnowball;
 import cn.nukkit.level.GameRule;
 import cn.nukkit.math.Vector3;
 import cn.nukkit.nbt.tag.CompoundTag;
@@ -36,6 +37,8 @@ public abstract class ItemGunBase extends ItemEdible {
         Server.getInstance().getScheduler().scheduleRepeatingTask(GunPlugin.getInstance(), () -> {
             Server.getInstance().getOnlinePlayers().values().forEach(player -> {
                 if (player.getInventory().getItemInHand() instanceof ItemGunBase) {
+                    if (player.getFoodData().getLevel() == player.getFoodData().getMaxLevel())
+                        player.getFoodData().setLevel(player.getFoodData().getMaxLevel() - 1);
                     ItemGunBase itemGun = (ItemGunBase) player.getInventory().getItemInHand();
                     if (player.isSneaking()) {
                         itemGun.getGunData().addAimingSlownessEffect(player);
@@ -92,20 +95,13 @@ public abstract class ItemGunBase extends ItemEdible {
 
     @Override
     public boolean onClickAir(Player player, Vector3 directionVector) {
+        this.interact(player);
         return true;
     }
 
     @Override
     public boolean onUse(Player player, int ticksUsed) {
         return false;
-    }
-
-    @Override
-    public CompoundTag getNamedTag() {
-        CompoundTag tag =  super.getNamedTag();
-        tag.getCompound("components").putCompound("minecraft:food", (new CompoundTag()).putInt("nutrition", 0).putBoolean("can_always_eat", true));
-        tag.getCompound("components").getCompound("item_properties").putInt("use_duration", (int)(this.gunData.getFireCoolDown() * 20.0D)).putInt("use_animation", 1);
-        return tag;
     }
 
     @Override
@@ -123,24 +119,24 @@ public abstract class ItemGunBase extends ItemEdible {
         }
         ItemGunBase itemGun = (ItemGunBase)player.getInventory().getItemInHand();
         if (itemGun.getAmmoCount() > 0) {
-            gunData.fire(player,this);
+            itemGun.getGunData().fire(player,this);
             if (player.getGamemode() != 1) {
                 itemGun.setAmmoCount(itemGun.getAmmoCount() - 1);
             }
-            player.getInventory().setItem(player.getInventory().getHeldItemIndex(),itemGun,false);
-            GunPlugin.getInstance().getCoolDownTimer().addCoolDown(player, (int) (gunData.getFireCoolDown() * 20), () -> {}, () -> CoolDownTimer.Operator.NO_ACTION, CoolDownTimer.Type.FIRECOOLDOWN);
+            player.getInventory().setItem(player.getInventory().getHeldItemIndex(),itemGun);
+            GunPlugin.getInstance().getCoolDownTimer().addCoolDown(player, (int) (itemGun.getGunData().getFireCoolDown() * 20), () -> {}, () -> CoolDownTimer.Operator.NO_ACTION, CoolDownTimer.Type.FIRECOOLDOWN);
             return GunInteractAction.FIRE;
         }
-        if (itemGun.getAmmoCount() == 0 && player.getInventory().contains(Item.get(gunData.getMagId()))) {
-            gunData.startReload(player);
-            GunPlugin.getInstance().getCoolDownTimer().addCoolDown(player, (int) (gunData.getReloadTime() * 20), () -> {
-                gunData.reloadFinish(player);
-                itemGun.setAmmoCount(gunData.getMagSize());
-                player.getInventory().setItem(player.getInventory().getHeldItemIndex(),itemGun,false);//because some unknown reasons,if don't do that there will be some problems...fuck you nukkit
+        if (itemGun.getAmmoCount() == 0 && player.getInventory().contains(Item.get(itemGun.getGunData().getMagId()))) {
+            itemGun.getGunData().startReload(player);
+            GunPlugin.getInstance().getCoolDownTimer().addCoolDown(player, (int) (itemGun.getGunData().getReloadTime() * 20), () -> {
+                itemGun.getGunData().reloadFinish(player);
+                itemGun.setAmmoCount(itemGun.getGunData().getMagSize());
+                player.getInventory().setItem(player.getInventory().getHeldItemIndex(),itemGun);//because some unknown reasons,if don't do that there will be some problems...fuck you nukkit
                 for (Map.Entry<Integer,Item> entry : player.getInventory().getContents().entrySet()){
                     Item item = entry.getValue();
                     int slot = entry.getKey();
-                    if (item.getId() == gunData.getMagId()){
+                    if (item.getId() == itemGun.getGunData().getMagId()){
                         item.setCount(item.count - 1);
                         player.getInventory().setItem(slot,item);
                         break;
@@ -185,14 +181,6 @@ public abstract class ItemGunBase extends ItemEdible {
                 }/*else {
                     ((ItemGunBase) event.getPlayer().getInventory().getItemInHand()).interact(event.getPlayer());
                 }*/
-            }
-        }
-
-        @EventHandler
-        public void onPlayerInteract(PlayerInteractEvent event) {
-            Player player = event.getPlayer();
-            if (player.getInventory().getItemInHand() instanceof ItemGunBase && (event.getAction() == cn.nukkit.event.player.PlayerInteractEvent.Action.RIGHT_CLICK_BLOCK || event.getAction() == cn.nukkit.event.player.PlayerInteractEvent.Action.RIGHT_CLICK_AIR)) {
-                ((ItemGunBase) event.getPlayer().getInventory().getItemInHand()).interact(event.getPlayer());
             }
         }
 
@@ -257,6 +245,9 @@ public abstract class ItemGunBase extends ItemEdible {
         public void onPlayerHeldItem(PlayerItemHeldEvent event){
             if (!(event.getItem() instanceof ItemGunBase)) {
                 event.getPlayer().removeEffect(Effect.SLOWNESS);
+            }else{
+                if (event.getPlayer().getFoodData().getLevel() == event.getPlayer().getFoodData().getMaxLevel())
+                    event.getPlayer().getFoodData().setLevel(event.getPlayer().getFoodData().getMaxLevel() - 1);
             }
         }
 
