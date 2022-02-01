@@ -92,7 +92,6 @@ public abstract class ItemGunBase extends ItemEdible {
 
     @Override
     public boolean onClickAir(Player player, Vector3 directionVector) {
-        GunInteractAction action = this.interact(player);
         return true;
     }
 
@@ -181,17 +180,13 @@ public abstract class ItemGunBase extends ItemEdible {
             }
         }
 
-//        @EventHandler
-//        public void onPlayerInteract(PlayerInteractEvent event) {
-//            Player player = event.getPlayer();
-//            if (player.getInventory().getItemInHand() instanceof ItemGunBase && event.getAction() == cn.nukkit.event.player.PlayerInteractEvent.Action.RIGHT_CLICK_BLOCK) {
-//                if (GunPlugin.getInstance().getPlayerSettingPool().getSettings().get(event.getPlayer().getName()).getFireMode() == PlayerSettingMap.FireMode.AUTO){
-//                    GunPlugin.getInstance().getFireTask().changeState(event.getPlayer());
-//                }else {
-//                    ((ItemGunBase) event.getPlayer().getInventory().getItemInHand()).interact(event.getPlayer());
-//                }
-//            }
-//        }
+        @EventHandler
+        public void onPlayerInteract(PlayerInteractEvent event) {
+            Player player = event.getPlayer();
+            if (player.getInventory().getItemInHand() instanceof ItemGunBase && (event.getAction() == cn.nukkit.event.player.PlayerInteractEvent.Action.RIGHT_CLICK_BLOCK || event.getAction() == cn.nukkit.event.player.PlayerInteractEvent.Action.RIGHT_CLICK_AIR)) {
+                ((ItemGunBase) event.getPlayer().getInventory().getItemInHand()).interact(event.getPlayer());
+            }
+        }
 
         @EventHandler
         public void onPlayerDropItem(PlayerDropItemEvent event){
