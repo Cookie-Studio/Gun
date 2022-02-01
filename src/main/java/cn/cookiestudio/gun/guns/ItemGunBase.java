@@ -104,7 +104,7 @@ public abstract class ItemGunBase extends ItemEdible {
     public CompoundTag getNamedTag() {
         CompoundTag tag =  super.getNamedTag();
         tag.getCompound("components").putCompound("minecraft:food", (new CompoundTag()).putInt("nutrition", 0).putBoolean("can_always_eat", true));
-        tag.getCompound("components").getCompound("item_properties").putInt("use_duration", (int)(this.gunData.getFireCoolDown() * 20.0D)).putInt("use_animation", false ? 2 : 1);
+        tag.getCompound("components").getCompound("item_properties").putInt("use_duration", (int)(this.gunData.getFireCoolDown() * 20.0D)).putInt("use_animation", 1);
         return tag;
     }
 
