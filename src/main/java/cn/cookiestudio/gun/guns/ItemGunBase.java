@@ -98,7 +98,7 @@ public abstract class ItemGunBase extends ItemEdible {
 
     @Override
     public boolean onUse(Player player, int ticksUsed) {
-        return true;
+        return false;
     }
 
     @Override
