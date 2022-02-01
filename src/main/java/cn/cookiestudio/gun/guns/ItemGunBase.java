@@ -169,6 +169,25 @@ public abstract class ItemGunBase extends Item {
         }
 
         @EventHandler
+        public void onPlayerInteract(PlayerInteractEvent event) {
+            Player player = event.getPlayer();
+            if (player.getInventory().getItemInHand() instanceof ItemGunBase && event.getAction() == cn.nukkit.event.player.PlayerInteractEvent.Action.RIGHT_CLICK_BLOCK) {
+                ItemGunBase gunBase = (ItemGunBase)player.getInventory().getItemInHand();
+                if (player.getInventory().contains(Item.get(gunBase.getGunData().getMagId())) || player.getGamemode() == 1) {
+                    gunBase.reload(player);
+                    return;
+                }
+
+                event.setCancelled(true);
+                GunPlugin.getInstance().getCoolDownTimer().addCoolDown(player, 5, () -> {
+                }, () -> {
+                    return CoolDownTimer.Operator.NO_ACTION;
+                }, CoolDownTimer.Type.FIRECOOLDOWN);
+            }
+
+        }
+
+        @EventHandler
         public void onPlayerDropItem(PlayerDropItemEvent event){
             if (event.getItem() instanceof ItemGunBase){
                 event.setCancelled();
