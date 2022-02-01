@@ -93,7 +93,7 @@ public abstract class ItemGunBase extends ItemEdible {
     @Override
     public boolean onClickAir(Player player, Vector3 directionVector) {
         GunInteractAction action = this.interact(player);
-        return true;
+        return false;
     }
 
     @Override
