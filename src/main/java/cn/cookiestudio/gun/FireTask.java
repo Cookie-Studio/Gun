@@ -30,7 +30,7 @@ public class FireTask extends PluginTask {
 
             @EventHandler
             public void onPlayerInteractFiring(PlayerItemHeldEvent event){
-                if (firing.containsKey(event.getPlayer()))
+                if (firing.containsKey(event.getPlayer()) && !(event.getItem() instanceof ItemGunBase))
                     firing.put(event.getPlayer(),false);
             }
         },GunPlugin.getInstance());

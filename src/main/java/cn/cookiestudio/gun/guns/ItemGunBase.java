@@ -95,8 +95,7 @@ public abstract class ItemGunBase extends ItemEdible {
 
     @Override
     public boolean onClickAir(Player player, Vector3 directionVector) {
-        this.interact(player);
-        return true;
+        return false;
     }
 
     @Override
@@ -119,7 +118,7 @@ public abstract class ItemGunBase extends ItemEdible {
         }
         ItemGunBase itemGun = (ItemGunBase)player.getInventory().getItemInHand();
         if (itemGun.getAmmoCount() > 0) {
-            itemGun.getGunData().fire(player,this);
+            itemGun.getGunData().fire(player,itemGun);
             if (player.getGamemode() != 1) {
                 itemGun.setAmmoCount(itemGun.getAmmoCount() - 1);
             }
@@ -148,8 +147,8 @@ public abstract class ItemGunBase extends ItemEdible {
             }, CoolDownTimer.Type.RELOAD);
             return GunInteractAction.RELOAD;
         }
-        if (getAmmoCount() == 0){
-            gunData.emptyGun(player);
+        if (itemGun.getAmmoCount() == 0){
+            itemGun.getGunData().emptyGun(player);
             return GunInteractAction.EMPTY_GUN;
         }
         return null;
@@ -181,6 +180,15 @@ public abstract class ItemGunBase extends ItemEdible {
                 }/*else {
                     ((ItemGunBase) event.getPlayer().getInventory().getItemInHand()).interact(event.getPlayer());
                 }*/
+            }
+        }
+
+
+        @EventHandler
+        public void onPlayerInteract(PlayerInteractEvent event) {
+            if (event.getPlayer().getInventory().getItemInHand() instanceof ItemGunBase && (event.getAction() == PlayerInteractEvent.Action.RIGHT_CLICK_AIR || event.getAction() == PlayerInteractEvent.Action.RIGHT_CLICK_BLOCK)){
+                ItemGunBase itemGun = (ItemGunBase) event.getPlayer().getInventory().getItemInHand();
+                itemGun.interact(event.getPlayer());
             }
         }
 
