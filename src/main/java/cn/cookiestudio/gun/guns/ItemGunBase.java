@@ -11,6 +11,7 @@ import cn.nukkit.event.entity.EntityDamageEvent;
 import cn.nukkit.event.entity.EntityDeathEvent;
 import cn.nukkit.event.player.*;
 import cn.nukkit.item.Item;
+import cn.nukkit.item.ItemEdible;
 import cn.nukkit.level.GameRule;
 import cn.nukkit.nbt.tag.CompoundTag;
 import cn.nukkit.network.protocol.AnimatePacket;
@@ -24,7 +25,7 @@ import java.util.stream.Collectors;
 
 @Setter
 @Getter
-public abstract class ItemGunBase extends Item {
+public abstract class ItemGunBase extends ItemEdible {
 
     protected GunData gunData;
 
@@ -174,7 +175,7 @@ public abstract class ItemGunBase extends Item {
             if (player.getInventory().getItemInHand() instanceof ItemGunBase && event.getAction() == cn.nukkit.event.player.PlayerInteractEvent.Action.RIGHT_CLICK_BLOCK) {
                 ItemGunBase gunBase = (ItemGunBase)player.getInventory().getItemInHand();
                 if (player.getInventory().contains(Item.get(gunBase.getGunData().getMagId())) || player.getGamemode() == 1) {
-                    gunBase.reload(player);
+                    gunBase.interact(player);
                     return;
                 }
 
