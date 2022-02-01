@@ -11,8 +11,10 @@ import cn.nukkit.event.entity.EntityDamageEvent;
 import cn.nukkit.event.entity.EntityDeathEvent;
 import cn.nukkit.event.player.*;
 import cn.nukkit.item.Item;
+import cn.nukkit.item.ItemApple;
 import cn.nukkit.item.ItemEdible;
 import cn.nukkit.level.GameRule;
+import cn.nukkit.math.Vector3;
 import cn.nukkit.nbt.tag.CompoundTag;
 import cn.nukkit.network.protocol.AnimatePacket;
 import cn.nukkit.potion.Effect;
@@ -89,6 +91,17 @@ public abstract class ItemGunBase extends ItemEdible {
     }
 
     @Override
+    public boolean onClickAir(Player player, Vector3 directionVector) {
+        GunInteractAction action = this.interact(player);
+        return false;
+    }
+
+    @Override
+    public boolean onUse(Player player, int ticksUsed) {
+        return true;
+    }
+
+    @Override
     public int getMaxStackSize() {
         return 1;
     }
@@ -101,9 +114,9 @@ public abstract class ItemGunBase extends ItemEdible {
         if (GunPlugin.getInstance().getCoolDownTimer().isCooling(player)){
             return GunInteractAction.COOLING;
         }
-        if (getAmmoCount() > 0) {
+        ItemGunBase itemGun = (ItemGunBase)player.getInventory().getItemInHand();
+        if (itemGun.getAmmoCount() > 0) {
             gunData.fire(player,this);
-            ItemGunBase itemGun = (ItemGunBase)player.getInventory().getItemInHand();
             if (player.getGamemode() != 1) {
                 itemGun.setAmmoCount(itemGun.getAmmoCount() - 1);
             }
@@ -111,11 +124,10 @@ public abstract class ItemGunBase extends ItemEdible {
             GunPlugin.getInstance().getCoolDownTimer().addCoolDown(player, (int) (gunData.getFireCoolDown() * 20), () -> {}, () -> CoolDownTimer.Operator.NO_ACTION, CoolDownTimer.Type.FIRECOOLDOWN);
             return GunInteractAction.FIRE;
         }
-        if (getAmmoCount() == 0 && player.getInventory().contains(Item.get(gunData.getMagId()))) {
+        if (itemGun.getAmmoCount() == 0 && player.getInventory().contains(Item.get(gunData.getMagId()))) {
             gunData.startReload(player);
             GunPlugin.getInstance().getCoolDownTimer().addCoolDown(player, (int) (gunData.getReloadTime() * 20), () -> {
                 gunData.reloadFinish(player);
-                ItemGunBase itemGun = (ItemGunBase)player.getInventory().getItemInHand();
                 itemGun.setAmmoCount(gunData.getMagSize());
                 player.getInventory().setItem(player.getInventory().getHeldItemIndex(),itemGun,false);//because some unknown reasons,if don't do that there will be some problems...fuck you nukkit
                 for (Map.Entry<Integer,Item> entry : player.getInventory().getContents().entrySet()){
@@ -159,34 +171,27 @@ public abstract class ItemGunBase extends ItemEdible {
 
     private static class Listener implements cn.nukkit.event.Listener {
         @EventHandler
-        public void onPlayerInteractItem(PlayerAnimationEvent event) {
+        public void onPlayerAnimation(PlayerAnimationEvent event) {
             if (event.getAnimationType() == AnimatePacket.Action.SWING_ARM && event.getPlayer().getInventory().getItemInHand() instanceof ItemGunBase) {
                 if (GunPlugin.getInstance().getPlayerSettingPool().getSettings().get(event.getPlayer().getName()).getFireMode() == PlayerSettingMap.FireMode.AUTO){
                     GunPlugin.getInstance().getFireTask().changeState(event.getPlayer());
-                }else {
+                }/*else {
                     ((ItemGunBase) event.getPlayer().getInventory().getItemInHand()).interact(event.getPlayer());
-                }
+                }*/
             }
         }
 
-        @EventHandler
-        public void onPlayerInteract(PlayerInteractEvent event) {
-            Player player = event.getPlayer();
-            if (player.getInventory().getItemInHand() instanceof ItemGunBase && event.getAction() == cn.nukkit.event.player.PlayerInteractEvent.Action.RIGHT_CLICK_BLOCK) {
-                ItemGunBase gunBase = (ItemGunBase)player.getInventory().getItemInHand();
-                if (player.getInventory().contains(Item.get(gunBase.getGunData().getMagId())) || player.getGamemode() == 1) {
-                    gunBase.interact(player);
-                    return;
-                }
-
-                event.setCancelled(true);
-                GunPlugin.getInstance().getCoolDownTimer().addCoolDown(player, 5, () -> {
-                }, () -> {
-                    return CoolDownTimer.Operator.NO_ACTION;
-                }, CoolDownTimer.Type.FIRECOOLDOWN);
-            }
-
-        }
+//        @EventHandler
+//        public void onPlayerInteract(PlayerInteractEvent event) {
+//            Player player = event.getPlayer();
+//            if (player.getInventory().getItemInHand() instanceof ItemGunBase && event.getAction() == cn.nukkit.event.player.PlayerInteractEvent.Action.RIGHT_CLICK_BLOCK) {
+//                if (GunPlugin.getInstance().getPlayerSettingPool().getSettings().get(event.getPlayer().getName()).getFireMode() == PlayerSettingMap.FireMode.AUTO){
+//                    GunPlugin.getInstance().getFireTask().changeState(event.getPlayer());
+//                }else {
+//                    ((ItemGunBase) event.getPlayer().getInventory().getItemInHand()).interact(event.getPlayer());
+//                }
+//            }
+//        }
 
         @EventHandler
         public void onPlayerDropItem(PlayerDropItemEvent event){

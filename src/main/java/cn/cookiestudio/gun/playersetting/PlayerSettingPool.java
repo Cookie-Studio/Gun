@@ -53,8 +53,8 @@ public class PlayerSettingPool {
         if (!existInFile(name)){
             PlayerSettingMap entry = PlayerSettingMap
                     .builder()
-                    .fireMode(PlayerSettingMap.FireMode.AUTO)
-                    .openTrajectoryParticle(false)
+                    .fireMode(PlayerSettingMap.FireMode.MANUAL)
+                    .openTrajectoryParticle(true)
                     .openMuzzleParticle(true)
                     .build();
             settings.put(name,entry);

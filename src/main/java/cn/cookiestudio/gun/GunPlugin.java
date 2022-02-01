@@ -107,7 +107,7 @@ public class GunPlugin extends PluginBase {
             gunDataMap.put(stringClassMap.get(e.getKey()), gunData);
             try {
                 ItemGunBase itemGun = stringClassMap.get(e.getKey()).newInstance();
-                blockItemManager.registerFoodItem(itemGun, 0, (int)Math.round(gunData.getFireCoolDown() * 20.0D), true);
+                blockItemManager.registerFoodItem(itemGun, 0, (int)(gunData.getFireCoolDown() * 20.0D), true);
                 blockItemManager.registerSimpleItem(itemGun.getItemMagObject(), "equipment", false, true);
                 blockItemManager.addToCreativeBar(Item.get(itemGun.getGunData().getGunId()));
                 blockItemManager.addToCreativeBar(Item.get(itemGun.getGunData().getMagId()));
