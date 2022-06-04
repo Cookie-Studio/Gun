@@ -6,7 +6,7 @@
 
     <groupId>cn.cookiestudio</groupId>
     <artifactId>Gun</artifactId>
-    <version>1.1.4-PNX</version>
+    <version>1.1.4.1-PNX</version>
 
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
@@ -70,7 +70,7 @@
         <dependency>
             <groupId>cn.powernukkitx</groupId>
             <artifactId>powernukkitx</artifactId>
-            <version>1.6.0.0-PNX-SNAPSHOT</version>
+            <version>1.6.0.0-PNX</version>
         </dependency>
 
         <!-- Annotations -->

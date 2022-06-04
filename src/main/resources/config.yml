@@ -40,7 +40,7 @@ m249:
 taurus:
   magSize: 17
   magName: taurus_mag
-  fireCoolDown: 0.15
+  fireCoolDown: 0.2
   reloadTime: 2.0
   slownessLevel: 1
   slownessLevelAim: 2
@@ -53,7 +53,7 @@ taurus:
 m3:
   magSize: 8
   magName: m3_ammo
-  fireCoolDown: 1.0
+  fireCoolDown: 1.25
   reloadTime: 4.0
   slownessLevel: 2
   slownessLevelAim: 3
@@ -92,7 +92,7 @@ p90:
 awp:
   magSize: 10
   magName: awp_mag
-  fireCoolDown: 3.0
+  fireCoolDown: 1.0
   reloadTime: 5.0
   slownessLevel: 3
   slownessLevelAim: 10

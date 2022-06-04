@@ -13,6 +13,7 @@ import cn.nukkit.event.player.*;
 import cn.nukkit.item.*;
 import cn.nukkit.item.customitem.ItemCustomEdible;
 import cn.nukkit.level.GameRule;
+import cn.nukkit.level.Position;
 import cn.nukkit.math.Vector3;
 import cn.nukkit.nbt.tag.CompoundTag;
 import cn.nukkit.network.protocol.AnimatePacket;
@@ -20,8 +21,7 @@ import cn.nukkit.potion.Effect;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.Arrays;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Setter
@@ -191,8 +191,7 @@ public abstract class ItemGunBase extends ItemCustomEdible {
                     return;
                 ItemGunBase itemGun = (ItemGunBase) event.getPlayer().getInventory().getItemInHand();
                 event.getPlayer().getInventory().clear(event.getPlayer().getInventory().getHeldItemIndex());
-                EntityGun entityGun = new EntityGun(event.getPlayer().getChunk(), EntityGun.getDefaultNBT(event.getPlayer()),itemGun.getGunData(),itemGun);
-                entityGun.spawnToAll();
+                dropGun(itemGun,event.getPlayer(),0);
             }
             if (event.getItem() instanceof ItemMagBase){
                 event.setCancelled();
@@ -205,38 +204,75 @@ public abstract class ItemGunBase extends ItemCustomEdible {
                 }else{
                     event.getPlayer().getInventory().clear(event.getPlayer().getInventory().getHeldItemIndex());
                 }
-                EntityMag entityMag = new EntityMag(event.getPlayer().getChunk(), EntityGun.getDefaultNBT(event.getPlayer()), (ItemMagBase) event.getItem());
-                entityMag.spawnToAll();
+                dropMag((ItemMagBase) event.getItem(),event.getPlayer(),0);
             }
         }
 
         @EventHandler
-        public void onPlayerInteractEntityGunOrMag(EntityDamageByEntityEvent event) throws InstantiationException, IllegalAccessException {
-            if (event.getEntity() instanceof EntityGun && event.getDamager() instanceof Player){
-                event.setCancelled();
-                EntityGun entityGun = (EntityGun) event.getEntity();
-                int empty = ((Player) event.getDamager()).getInventory().firstEmpty(null);
-                if (empty != -1){
-                    ((Player) event.getDamager()).getInventory().setItem(empty,entityGun.getItemGun());
+        public void onPlayerDeath(PlayerDeathEvent event){
+            List<Item> newDrops = new ArrayList<>();
+            for (Item item : event.getDrops()) {
+                if (item instanceof ItemGunBase gun) {
+                    dropGun(gun,event.getEntity(),1);
+                } else if (item instanceof ItemMagBase mag) {
+                    dropMag(mag,event.getEntity(),1);
+                } else {
+                    newDrops.add(item);
                 }
-                event.getEntity().close();
             }
-            if (event.getEntity() instanceof EntityMag && event.getDamager() instanceof Player){
-                event.setCancelled();
-                EntityMag entityMag = (EntityMag) event.getEntity();
-                ItemMagBase itemMag = entityMag.getItemMag();
-                int empty = ((Player) event.getDamager()).getInventory().firstEmpty(null);
-                if (empty != -1){
-                    ((Player) event.getDamager()).getInventory().setItem(empty,itemMag);
-                }
-                event.getEntity().close();
-            }
+            event.setDrops(newDrops.toArray(new Item[0]));
         }
+
+        private void dropGun(ItemGunBase gun, Position pos,double offset){
+            EntityGun entityGun;
+            if (offset!=0){
+                Random random = new Random();
+                entityGun = new EntityGun(pos.getChunk(), EntityGun.getDefaultNBT(pos.add(random.nextDouble(offset),0,random.nextDouble(offset))), gun.getGunData(), gun);
+            }else{
+                entityGun = new EntityGun(pos.getChunk(), EntityGun.getDefaultNBT(pos), gun.getGunData(), gun);
+            }
+            entityGun.spawnToAll();
+        }
+
+        private void dropMag(ItemMagBase mag, Position pos,double offset){
+            EntityMag entityMag;
+            if (offset!=0){
+                Random random = new Random();
+                entityMag = new EntityMag(pos.getChunk(), EntityMag.getDefaultNBT(pos.add(random.nextDouble(offset),0,random.nextDouble(offset))), mag);
+            }else{
+                entityMag = new EntityMag(pos.getChunk(), EntityMag.getDefaultNBT(pos), mag);
+            }
+            entityMag.spawnToAll();
+        }
+
+//        @EventHandler
+//        public void onPlayerInteractEntityGunOrMag(EntityDamageByEntityEvent event){
+//            if (event.getEntity() instanceof EntityGun && event.getDamager() instanceof Player){
+//                event.setCancelled();
+//                EntityGun entityGun = (EntityGun) event.getEntity();
+//                int empty = ((Player) event.getDamager()).getInventory().firstEmpty(null);
+//                if (empty != -1){
+//                    ((Player) event.getDamager()).getInventory().setItem(empty,entityGun.getItemGun());
+//                }
+//                event.getEntity().close();
+//            }
+//            if (event.getEntity() instanceof EntityMag && event.getDamager() instanceof Player){
+//                event.setCancelled();
+//                EntityMag entityMag = (EntityMag) event.getEntity();
+//                ItemMagBase itemMag = entityMag.getItemMag();
+//                int empty = ((Player) event.getDamager()).getInventory().firstEmpty(null);
+//                if (empty != -1){
+//                    ((Player) event.getDamager()).getInventory().setItem(empty,itemMag);
+//                }
+//                event.getEntity().close();
+//            }
+//        }
 
         @EventHandler
         public void onEntityGunOrMagHurt(EntityDamageEvent event){
             if (event.getEntity() instanceof EntityGun || event.getEntity() instanceof EntityMag){
-                event.setCancelled();
+                if (!(event instanceof EntityDamageByEntityEvent))
+                    event.setCancelled();
             }
         }
 

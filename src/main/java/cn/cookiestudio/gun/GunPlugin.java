@@ -4,14 +4,10 @@ import cn.cookiestudio.gun.command.GunCommand;
 import cn.cookiestudio.gun.guns.GunData;
 import cn.cookiestudio.gun.guns.ItemGunBase;
 import cn.cookiestudio.gun.guns.achieve.*;
-import cn.cookiestudio.gun.network.AnimateEntityPacket;
-import cn.cookiestudio.gun.network.CameraShakePacket;
 import cn.cookiestudio.gun.playersetting.PlayerSettingPool;
 import cn.nukkit.Server;
 import cn.nukkit.entity.data.Skin;
 import cn.nukkit.item.Item;
-import cn.nukkit.item.RuntimeItemMapping;
-import cn.nukkit.network.protocol.ProtocolInfo;
 import cn.nukkit.plugin.PluginBase;
 import cn.nukkit.utils.Config;
 import lombok.Getter;
@@ -62,7 +58,6 @@ public class GunPlugin extends PluginBase {
         copyResource();
         config = new Config(getDataFolder() + "/config.yml");
         loadGunData();
-        registerPacket();
         registerListener();
         registerCommand();
         coolDownTimer = new CoolDownTimer();
@@ -153,11 +148,6 @@ public class GunPlugin extends PluginBase {
 
     private void registerCommand() {
         Server.getInstance().getCommandMap().register("",new GunCommand("gun"));
-    }
-
-    private void registerPacket() {
-        Server.getInstance().getNetwork().registerPacket(ProtocolInfo.ANIMATE_ENTITY_PACKET, AnimateEntityPacket.class);
-        Server.getInstance().getNetwork().registerPacket(ProtocolInfo.CAMERA_SHAKE_PACKET, CameraShakePacket.class);
     }
 
     public void saveGunData(GunData gunData){

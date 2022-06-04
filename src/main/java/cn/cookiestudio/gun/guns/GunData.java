@@ -2,8 +2,6 @@ package cn.cookiestudio.gun.guns;
 
 import cn.cookiestudio.gun.GunPlugin;
 import cn.cookiestudio.gun.guns.achieve.ItemGunM3;
-import cn.cookiestudio.gun.network.AnimateEntityPacket;
-import cn.cookiestudio.gun.network.CameraShakePacket;
 import cn.cookiestudio.gun.utils.SoundUtil;
 import cn.nukkit.Player;
 import cn.nukkit.Server;
@@ -16,6 +14,8 @@ import cn.nukkit.level.Position;
 import cn.nukkit.level.format.FullChunk;
 import cn.nukkit.level.particle.DestroyBlockParticle;
 import cn.nukkit.math.Vector3;
+import cn.nukkit.network.protocol.AnimateEntityPacket;
+import cn.nukkit.network.protocol.CameraShakePacket;
 import cn.nukkit.network.protocol.SpawnParticleEffectPacket;
 import cn.nukkit.potion.Effect;
 import cn.nukkit.utils.BVector3;
@@ -88,7 +88,7 @@ public class GunData {
 
     public void fire(Player player,ItemGunBase gunType) {
         SoundUtil.playSound(player, this.getFireSound(), 1.0F, 1.0F);
-        shakeCamera(player);
+        player.shakeCamera((float) fireSwingIntensity, 0.1F, CameraShakePacket.CameraShakeType.ROTATIONAL, CameraShakePacket.CameraShakeAction.ADD);
         if (player.isSprinting()) {
             player.setSprinting(false);
             player.sendMovementSpeed(player.getMovementSpeed());
@@ -137,14 +137,6 @@ public class GunData {
         return pos;
     }
 
-    public void shakeCamera(Player player){
-        CameraShakePacket packet = new CameraShakePacket();
-        packet.setDuration(0.1F);
-        packet.setShakeType(CameraShakePacket.CameraShakeType.ROTATIONAL);
-        packet.setShakeAction(CameraShakePacket.CameraShakeAction.ADD);
-        packet.setIntensity((float) fireSwingIntensity);
-        player.dataPacket(packet);
-    }
 
     public void playReloadAnimation(Player player){
         AnimateEntityPacket packetTP = new AnimateEntityPacket();
