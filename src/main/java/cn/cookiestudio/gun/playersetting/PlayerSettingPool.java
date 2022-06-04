@@ -49,7 +49,6 @@ public class PlayerSettingPool {
     }
 
     public PlayerSettingMap cache(String name){
-        String key = name;
         if (!existInFile(name)){
             PlayerSettingMap entry = PlayerSettingMap
                     .builder()
@@ -60,11 +59,12 @@ public class PlayerSettingPool {
             settings.put(name,entry);
             return entry;
         }
+        Map playerSetting = (Map) config.get(name);
         PlayerSettingMap e = PlayerSettingMap
                 .builder()
-                .fireMode(PlayerSettingMap.FireMode.values()[config.getInt(key + ".fireMode")])
-                .openTrajectoryParticle(config.getBoolean(key + ".openTrajectoryParticle"))
-                .openMuzzleParticle(config.getBoolean(key + ".openMuzzleParticle"))
+                .fireMode(PlayerSettingMap.FireMode.values()[((Double)playerSetting.get("fireMode")).intValue()])
+                .openTrajectoryParticle((Boolean) playerSetting.get("openTrajectoryParticle"))
+                .openMuzzleParticle((Boolean) playerSetting.get("openMuzzleParticle"))
                 .build();
         settings.put(name,e);
         return e;

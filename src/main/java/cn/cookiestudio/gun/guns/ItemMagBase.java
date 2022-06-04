@@ -1,22 +1,11 @@
 package cn.cookiestudio.gun.guns;
 
-import cn.nukkit.item.Item;
+import cn.nukkit.item.customitem.ItemCustom;
 
-public abstract class ItemMagBase extends Item {
-    public ItemMagBase(int id) {
-        super(id);
-    }
+public abstract class ItemMagBase extends ItemCustom {
 
-    public ItemMagBase(int id, Integer meta) {
-        super(id, meta);
-    }
-
-    public ItemMagBase(int id, Integer meta, int count) {
-        super(id, meta, count);
-    }
-
-    public ItemMagBase(int id, Integer meta, int count, String name) {
-        super(id, meta, count, name);
+    public ItemMagBase(String name){
+        super("gun:" + name,name,name);
     }
 
     @Override
@@ -24,6 +13,4 @@ public abstract class ItemMagBase extends Item {
         return 16;
     }
 
-    public void doInit() {
-    }
 }

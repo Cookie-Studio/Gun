@@ -10,10 +10,8 @@ import cn.nukkit.event.entity.EntityDamageByEntityEvent;
 import cn.nukkit.event.entity.EntityDamageEvent;
 import cn.nukkit.event.entity.EntityDeathEvent;
 import cn.nukkit.event.player.*;
-import cn.nukkit.item.Item;
-import cn.nukkit.item.ItemApple;
-import cn.nukkit.item.ItemEdible;
-import cn.nukkit.item.ItemSnowball;
+import cn.nukkit.item.*;
+import cn.nukkit.item.customitem.ItemCustomEdible;
 import cn.nukkit.level.GameRule;
 import cn.nukkit.math.Vector3;
 import cn.nukkit.nbt.tag.CompoundTag;
@@ -28,7 +26,7 @@ import java.util.stream.Collectors;
 
 @Setter
 @Getter
-public abstract class ItemGunBase extends ItemEdible {
+public abstract class ItemGunBase extends ItemCustomEdible {
 
     protected GunData gunData;
 
@@ -37,8 +35,6 @@ public abstract class ItemGunBase extends ItemEdible {
         Server.getInstance().getScheduler().scheduleRepeatingTask(GunPlugin.getInstance(), () -> {
             Server.getInstance().getOnlinePlayers().values().forEach(player -> {
                 if (player.getInventory().getItemInHand() instanceof ItemGunBase) {
-                    if (player.getFoodData().getLevel() == player.getFoodData().getMaxLevel())
-                        player.getFoodData().setLevel(player.getFoodData().getMaxLevel() - 1);
                     ItemGunBase itemGun = (ItemGunBase) player.getInventory().getItemInHand();
                     if (player.isSneaking()) {
                         itemGun.getGunData().addAimingSlownessEffect(player);
@@ -74,23 +70,18 @@ public abstract class ItemGunBase extends ItemEdible {
         }, 1);
     }
 
-    public ItemGunBase(int id) {
-        super(id);
+    public ItemGunBase(String name){
+        super("gun:" + name,name,name);
     }
 
-    public ItemGunBase(int id, Integer meta) {
-        super(id, meta);
+    @Override
+    public boolean canAlwaysEat() {
+        return true;
     }
 
-    public ItemGunBase(int id, Integer meta, int count) {
-        super(id, meta, count);
-    }
-
-    public ItemGunBase(int id, Integer meta, int count, String name) {
-        super(id, meta, count, name);
-    }
-
-    public void doInit() {
+    @Override
+    public int getEatTick() {
+        return (int) (this.getGunData().getFireCoolDown() * 20);
     }
 
     @Override
@@ -126,7 +117,7 @@ public abstract class ItemGunBase extends ItemEdible {
             GunPlugin.getInstance().getCoolDownTimer().addCoolDown(player, (int) (itemGun.getGunData().getFireCoolDown() * 20), () -> {}, () -> CoolDownTimer.Operator.NO_ACTION, CoolDownTimer.Type.FIRECOOLDOWN);
             return GunInteractAction.FIRE;
         }
-        if (itemGun.getAmmoCount() == 0 && player.getInventory().contains(Item.get(itemGun.getGunData().getMagId()))) {
+        if (itemGun.getAmmoCount() == 0 && player.getInventory().contains(Item.fromString("gun:" + itemGun.getGunData().getMagName()))) {//todo:debug
             itemGun.getGunData().startReload(player);
             GunPlugin.getInstance().getCoolDownTimer().addCoolDown(player, (int) (itemGun.getGunData().getReloadTime() * 20), () -> {
                 itemGun.getGunData().reloadFinish(player);
@@ -135,7 +126,7 @@ public abstract class ItemGunBase extends ItemEdible {
                 for (Map.Entry<Integer,Item> entry : player.getInventory().getContents().entrySet()){
                     Item item = entry.getValue();
                     int slot = entry.getKey();
-                    if (item.getId() == itemGun.getGunData().getMagId()){
+                    if (item.equals(Item.fromString("gun:" + itemGun.getGunData().getMagName()))){//todo:debug
                         item.setCount(item.count - 1);
                         player.getInventory().setItem(slot,item);
                         break;
@@ -251,12 +242,8 @@ public abstract class ItemGunBase extends ItemEdible {
 
         @EventHandler
         public void onPlayerHeldItem(PlayerItemHeldEvent event){
-            if (!(event.getItem() instanceof ItemGunBase)) {
+            if (!(event.getItem() instanceof ItemGunBase))
                 event.getPlayer().removeEffect(Effect.SLOWNESS);
-            }else{
-                if (event.getPlayer().getFoodData().getLevel() == event.getPlayer().getFoodData().getMaxLevel())
-                    event.getPlayer().getFoodData().setLevel(event.getPlayer().getFoodData().getMaxLevel() - 1);
-            }
         }
 
         @EventHandler
@@ -279,7 +266,7 @@ public abstract class ItemGunBase extends ItemEdible {
         }
     }
 
-    public static enum GunInteractAction{
+    public enum GunInteractAction{
         FIRE,
         RELOAD,
         COOLING,

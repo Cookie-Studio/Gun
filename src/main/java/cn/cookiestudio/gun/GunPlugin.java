@@ -10,22 +10,22 @@ import cn.cookiestudio.gun.playersetting.PlayerSettingPool;
 import cn.nukkit.Server;
 import cn.nukkit.entity.data.Skin;
 import cn.nukkit.item.Item;
+import cn.nukkit.item.RuntimeItemMapping;
 import cn.nukkit.network.protocol.ProtocolInfo;
 import cn.nukkit.plugin.PluginBase;
 import cn.nukkit.utils.Config;
-import com.blocklynukkit.loader.script.BlockItemManager;
 import lombok.Getter;
 
 import javax.imageio.ImageIO;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
 
 @Getter
 public class GunPlugin extends PluginBase {
@@ -33,7 +33,6 @@ public class GunPlugin extends PluginBase {
     @Getter
     private static GunPlugin instance;
     private Config config;
-    private BlockItemManager blockItemManager;
     private Map<Class<? extends ItemGunBase>, GunData> gunDataMap = new HashMap<>();
     private Map<String, Class<? extends ItemGunBase>> stringClassMap = new HashMap<>();
     private CoolDownTimer coolDownTimer;
@@ -60,7 +59,6 @@ public class GunPlugin extends PluginBase {
         playerSettingPool = new PlayerSettingPool();
         fireTask = new FireTask(this);
         initCrateSkin();
-        blockItemManager = new BlockItemManager(null);
         copyResource();
         config = new Config(getDataFolder() + "/config.yml");
         loadGunData();
@@ -83,13 +81,10 @@ public class GunPlugin extends PluginBase {
 
     private void loadGunData() {
         Map<String, Object> map = config.getAll();
-        AtomicInteger id = new AtomicInteger(2000);
         map.entrySet().stream().forEach(e -> {
             Map<String, Object> value = (Map<String, Object>) e.getValue();
             GunData gunData = GunData
                     .builder()
-                    .gunId(id.get())
-                    .magId(1000 + id.get())
                     .gunName(e.getKey())
                     .magName((String) value.get("magName"))
                     .hitDamage((Double) value.get("hitDamage"))
@@ -107,14 +102,11 @@ public class GunPlugin extends PluginBase {
             gunDataMap.put(stringClassMap.get(e.getKey()), gunData);
             try {
                 ItemGunBase itemGun = stringClassMap.get(e.getKey()).newInstance();
-                blockItemManager.registerFoodItem(itemGun, 0, (int)(gunData.getFireCoolDown() * 20.0D), true);
-                blockItemManager.registerSimpleItem(itemGun.getItemMagObject(), "equipment", false, true);
-                blockItemManager.addToCreativeBar(Item.get(itemGun.getGunData().getGunId()));
-                blockItemManager.addToCreativeBar(Item.get(itemGun.getGunData().getMagId()));
-            } catch (InstantiationException | IllegalAccessException exception) {
+                Item.registerCustomItem(itemGun.getClass());
+                Item.registerCustomItem(itemGun.getItemMagObject().getClass());
+            } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException exception) {
                 exception.printStackTrace();
             }
-            id.addAndGet(1);
         });
     }
 

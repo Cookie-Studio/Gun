@@ -9,6 +9,7 @@ import cn.nukkit.Player;
 import cn.nukkit.command.Command;
 import cn.nukkit.command.CommandSender;
 import cn.nukkit.command.ConsoleCommandSender;
+import cn.nukkit.command.data.CommandParameter;
 import cn.nukkit.form.element.*;
 import cn.nukkit.form.response.FormResponseCustom;
 import cn.nukkit.form.response.FormResponseSimple;
@@ -22,8 +23,12 @@ import java.util.stream.Collectors;
 
 public class GunCommand extends Command {
     public GunCommand(String name) {
-        super(name);
-        this.setPermission("op");
+        super(name,"Gun Plugin Command");
+        this.setPermission("gun.command");
+        this.commandParameters.clear();
+        this.commandParameters.put("default", new CommandParameter[]{
+                CommandParameter.newEnum("opt",new String[]{"data","setting"})
+        });
     }
 
     @Override

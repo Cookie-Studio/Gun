@@ -6,11 +6,11 @@
 
     <groupId>cn.cookiestudio</groupId>
     <artifactId>Gun</artifactId>
-    <version>1.1.3</version>
+    <version>1.1.4-PNX</version>
 
     <properties>
-        <maven.compiler.source>8</maven.compiler.source>
-        <maven.compiler.target>8</maven.compiler.target>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
     </properties>
 
     <repositories>
@@ -34,9 +34,19 @@
                 <enabled>true</enabled>
             </snapshots>
         </repository>
+<!--        <repository>-->
+<!--            <id>ck</id>-->
+<!--            <url>http://nz.ipyvps.com:1111/repository/cookie-studio/</url>-->
+<!--        </repository>-->
         <repository>
-            <id>ck</id>
-            <url>http://nz.ipyvps.com:1111/repository/cookie-studio/</url>
+            <id>maven-powernukkitx-cn</id>
+            <url>https://maven.powernukkitx.cn/repository/maven-public/</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
         </repository>
     </repositories>
 
@@ -49,34 +59,34 @@
 <!--            <scope>provided</scope>-->
 <!--        </dependency>-->
 
-        <!-- PN -->
-        <dependency>
-            <groupId>org.powernukkit</groupId>
-            <artifactId>powernukkit</artifactId>
-            <version>1.5.1.0-PN</version>
-        </dependency>
+<!--        &lt;!&ndash; PN &ndash;&gt;-->
+<!--        <dependency>-->
+<!--            <groupId>org.powernukkit</groupId>-->
+<!--            <artifactId>powernukkit</artifactId>-->
+<!--            <version>1.5.1.0-PN</version>-->
+<!--        </dependency>-->
 
-        <!-- BN -->
+        <!-- PNX -->
         <dependency>
-            <groupId>com.blocklynukkit</groupId>
-            <artifactId>BlocklyNukkit</artifactId>
-            <version>1.0.0</version>
+            <groupId>cn.powernukkitx</groupId>
+            <artifactId>powernukkitx</artifactId>
+            <version>1.6.0.0-PNX-SNAPSHOT</version>
         </dependency>
 
         <!-- Annotations -->
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <version>1.18.4</version>
+            <version>1.18.22</version>
             <scope>provided</scope>
         </dependency>
 
-        <!-- CustomParticle -->
-        <dependency>
-            <groupId>cn.cookiestudio</groupId>
-            <artifactId>CustomParticle</artifactId>
-            <version>1.0.4</version>
-        </dependency>
+<!--        &lt;!&ndash; CustomParticle &ndash;&gt;-->
+<!--        <dependency>-->
+<!--            <groupId>cn.cookiestudio</groupId>-->
+<!--            <artifactId>CustomParticle</artifactId>-->
+<!--            <version>1.0.4</version>-->
+<!--        </dependency>-->
 
         <!--    Easy4Form   -->
         <dependency>

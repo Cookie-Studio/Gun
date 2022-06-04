@@ -1,10 +1,5 @@
 package cn.cookiestudio.gun.guns;
 
-import cn.cookiestudio.customparticle.CustomParticlePlugin;
-import cn.cookiestudio.customparticle.customparticle.CustomParticle;
-import cn.cookiestudio.customparticle.math.BVector3;
-import cn.cookiestudio.customparticle.math.MathUtil;
-import cn.cookiestudio.customparticle.util.Identifier;
 import cn.cookiestudio.gun.GunPlugin;
 import cn.cookiestudio.gun.guns.achieve.ItemGunM3;
 import cn.cookiestudio.gun.network.AnimateEntityPacket;
@@ -21,7 +16,9 @@ import cn.nukkit.level.Position;
 import cn.nukkit.level.format.FullChunk;
 import cn.nukkit.level.particle.DestroyBlockParticle;
 import cn.nukkit.math.Vector3;
+import cn.nukkit.network.protocol.SpawnParticleEffectPacket;
 import cn.nukkit.potion.Effect;
+import cn.nukkit.utils.BVector3;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -29,6 +26,7 @@ import lombok.Setter;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
 @Getter
@@ -57,13 +55,11 @@ public class GunData {
     private String reloadAnimationFP;
     private String animationControllerTP;
     private String animationControllerFP;
-    private int gunId;
-    private int magId;
     private double fireSwingIntensity;
     private double fireSwingDuration;
 
     @Builder
-    public GunData(int gunId, int magId, String gunName, String magName, int magSize, double fireCoolDown, double reloadTime, int slownessLevel, int slownessLevelAim, double hitDamage, double range, double recoil, String particle, double fireSwingIntensity, double fireSwingDuration) {
+    public GunData(String gunName, String magName, int magSize, double fireCoolDown, double reloadTime, int slownessLevel, int slownessLevelAim, double hitDamage, double range, double recoil, String particle, double fireSwingIntensity, double fireSwingDuration) {
         //storage
         this.gunName = gunName;
         this.magSize = magSize;
@@ -80,9 +76,7 @@ public class GunData {
         this.recoil = recoil;
 
         //dynamic
-        this.gunId = gunId;
-        this.magId = magId;
-        this.fireParticle = new FireParticle(Identifier.from("gun", gunName));
+        this.fireParticle = new FireParticle();
         this.fireSound = gunName + "_fire";
         this.magInSound = gunName + "_magin";
         this.magOutSound = gunName + "_magout";
@@ -112,11 +106,11 @@ public class GunData {
             for (int i = 1;i <= 10;i++){
                 player.yaw += random.nextInt(11) - 5;
                 player.pitch += random.nextInt(11) - 5;
-                fireParticle.play(player, false,showParticlePlayers);
+                fireParticle.accept(player,showParticlePlayers);
                 player.setRotation(location.getYaw(),location.getPitch());
             }
         }else {
-            fireParticle.play(player, false,showParticlePlayers);
+            fireParticle.accept(player,showParticlePlayers);
         }
         if (recoil != 0) {
             Vector3 vector3 = getRecoilPos(player, recoil);
@@ -138,7 +132,7 @@ public class GunData {
     }
 
     public Vector3 getRecoilPos(Player player, double length) {
-        Vector3 pos = MathUtil.getFaceDirection(player, length).addAngle(180, 0).getPos();
+        Vector3 pos = BVector3.fromLocation(player, length).addAngle(180, 0).getPos();
         pos.y = player.y;
         return pos;
     }
@@ -189,19 +183,11 @@ public class GunData {
         player.addEffect(effect);
     }
 
-    private class FireParticle extends CustomParticle {
-
-        public FireParticle(Identifier identifier) {
-            super(identifier);
-        }
-
+    private class FireParticle implements BiConsumer<Position,Player[]> {
         @Override
-        public Map<String, List<Position>> apply(Long tick, Position pos) {
-            if (tick == 2) {
-                return null;
-            }
+        public void accept(Position pos,Player[] showPlayers) {
             if (!(pos instanceof Player)){
-                return null;
+                return;
             }
             Player player = (Player)pos;
             Location pos1;
@@ -215,9 +201,9 @@ public class GunData {
             Map<Entity, Integer> hitMap = new ConcurrentHashMap<>();
             List<Position> ammoParticleList = new CopyOnWriteArrayList<>();
             List<Position> hitParticleList = new CopyOnWriteArrayList<>();
-            BVector3 face = MathUtil.getFaceDirection(pos1, 0.8);
+            BVector3 face = BVector3.fromLocation(pos1, 0.8);
             for (int i = 0; i <= range * 20; i++) {
-                Position ammoPos = face.extend(0.05).addToPosition(pos1).add(0, 1.62, 0);
+                Position ammoPos = Position.fromObject(face.extend(0.05).addToPos(pos1).add(0, 1.62, 0),pos1.level);
                 if (!ammoPos.getLevelBlock().canPassThrough()) break;
                 ammoMap.put(i, ammoPos);
                 if (i % 4 == 0) ammoParticleList.add(ammoPos);
@@ -248,9 +234,30 @@ public class GunData {
                 hitPos.getLevel().addParticle(new DestroyBlockParticle(hitPos, Block.get(152)));
             }
             map.put(particle, ammoParticleList);
-            Position fireSmokePos = MathUtil.getFaceDirection(pos1, 0.8).addToPosition(pos1).add(0, 1.62, 0);
-            if (GunPlugin.getInstance().getPlayerSettingPool().getSettings().get(player.getName()).isOpenMuzzleParticle()) CustomParticlePlugin.getInstance().getParticleSender().sendParticle("minecraft:eyeofender_death_explode_particle",fireSmokePos);
-            return map;
+            Position fireSmokePos = Position.fromObject(BVector3.fromLocation(pos1, 0.8).addToPos(pos1).add(0, 1.62, 0),pos1.level);
+            if (GunPlugin.getInstance().getPlayerSettingPool().getSettings().get(player.getName()).isOpenMuzzleParticle())
+                sendParticle("minecraft:eyeofender_death_explode_particle",fireSmokePos,Server.getInstance().getOnlinePlayers().values().toArray(new Player[0]));
+            for (Map.Entry<String,List<Position>> entry : map.entrySet()){
+                String particleName = entry.getKey();
+                Position[] particlePositions = entry.getValue().toArray(new Position[0]);
+                for (Position particlePosition : particlePositions){
+                    sendParticle(particleName,particlePosition,showPlayers);
+                }
+            }
+        }
+
+        private static void sendParticle(String identifier, Position pos,Player[] showPlayers) {
+            Arrays.stream(showPlayers).forEach(player -> {
+                if (!player.isOnline())
+                    return;
+                SpawnParticleEffectPacket packet = new SpawnParticleEffectPacket();
+                packet.identifier = identifier;
+                packet.dimensionId = pos.getLevel().getDimension();
+                packet.position = pos.asVector3f();
+                try {
+                    player.dataPacket(packet);
+                }catch (Throwable t){}
+            });
         }
     }
 }
