@@ -5,9 +5,13 @@ import cn.cookiestudio.gun.guns.GunData;
 import cn.cookiestudio.gun.guns.ItemGunBase;
 import cn.cookiestudio.gun.guns.achieve.*;
 import cn.cookiestudio.gun.playersetting.PlayerSettingPool;
+import cn.nukkit.Player;
 import cn.nukkit.Server;
 import cn.nukkit.entity.data.Skin;
+import cn.nukkit.event.EventHandler;
+import cn.nukkit.event.server.DataPacketReceiveEvent;
 import cn.nukkit.item.Item;
+import cn.nukkit.network.protocol.EntityEventPacket;
 import cn.nukkit.plugin.PluginBase;
 import cn.nukkit.utils.Config;
 import lombok.Getter;
@@ -143,7 +147,20 @@ public class GunPlugin extends PluginBase {
 
 
     private void registerListener() {
-        Server.getInstance().getPluginManager().registerEvents(new Listener(), this);
+        Server.getInstance().getPluginManager().registerEvents(new Listener(){
+            @EventHandler
+            public void onDataPacketReceive(DataPacketReceiveEvent event){
+                if (event.getPacket() instanceof EntityEventPacket) {
+                    EntityEventPacket packet = (EntityEventPacket) event.getPacket();
+                    if (packet.event == EntityEventPacket.EATING_ITEM) {
+                        Player player = event.getPlayer();
+                        if (player.getInventory().getItemInHand() instanceof ItemGunBase) {
+                            event.setCancelled(true); //屏蔽右键使用枪时的食用食物声音
+                        }
+                    }
+                }
+            }
+        }, this);
     }
 
     private void registerCommand() {
