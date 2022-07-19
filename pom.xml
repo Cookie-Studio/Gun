@@ -34,10 +34,6 @@
                 <enabled>true</enabled>
             </snapshots>
         </repository>
-<!--        <repository>-->
-<!--            <id>ck</id>-->
-<!--            <url>http://nz.ipyvps.com:1111/repository/cookie-studio/</url>-->
-<!--        </repository>-->
         <repository>
             <id>maven-powernukkitx-cn</id>
             <url>https://maven.powernukkitx.cn/repository/maven-public/</url>
@@ -51,28 +47,13 @@
     </repositories>
 
     <dependencies>
-<!--        &lt;!&ndash; Nukkit &ndash;&gt;-->
-<!--        <dependency>-->
-<!--            <groupId>cn.nukkit</groupId>-->
-<!--            <artifactId>nukkit</artifactId>-->
-<!--            <version>1.0-SNAPSHOT</version>-->
-<!--            <scope>provided</scope>-->
-<!--        </dependency>-->
-
-<!--        &lt;!&ndash; PN &ndash;&gt;-->
-<!--        <dependency>-->
-<!--            <groupId>org.powernukkit</groupId>-->
-<!--            <artifactId>powernukkit</artifactId>-->
-<!--            <version>1.5.1.0-PN</version>-->
-<!--        </dependency>-->
-
         <!-- PNX -->
         <dependency>
             <groupId>cn.powernukkitx</groupId>
             <artifactId>powernukkitx</artifactId>
             <version>1.6.0.0-PNX</version>
             <scope>system</scope>
-            <systemPath>${project.basedir}/lib/powernukkitx-1.6.0.0-PNX-shaded.jar</systemPath>
+            <systemPath>${project.basedir}/lib/powernukkitx-1.6.0.0-PNX-sources.jar</systemPath>
         </dependency>
 
         <!-- Annotations -->
@@ -83,13 +64,6 @@
             <scope>provided</scope>
         </dependency>
 
-<!--        &lt;!&ndash; CustomParticle &ndash;&gt;-->
-<!--        <dependency>-->
-<!--            <groupId>cn.cookiestudio</groupId>-->
-<!--            <artifactId>CustomParticle</artifactId>-->
-<!--            <version>1.0.4</version>-->
-<!--        </dependency>-->
-
         <!--    Easy4Form   -->
         <dependency>
             <groupId>cn.cookiestudio</groupId>
@@ -99,5 +73,4 @@
             <systemPath>${project.basedir}/lib/Easy4Form.jar</systemPath>
         </dependency>
     </dependencies>
-
 </project>
