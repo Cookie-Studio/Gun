@@ -23,6 +23,16 @@ public class ItemGunMk18 extends ItemGunBase {
     }
 
     @Override
+    public int getSkinId() {
+        return 16;
+    }
+
+    @Override
+    public float getDropItemScale() {
+        return 0.06f;
+    }
+
+    @Override
     public ItemMagBase getItemMagObject() {
         return new ItemMagMk18();
     }
@@ -32,6 +42,16 @@ public class ItemGunMk18 extends ItemGunBase {
         public ItemMagMk18() {
             super(getGunData(ItemGunMk18.class).getMagName());
             this.setCustomName(getGunData(ItemGunMk18.class).getMagName());
+        }
+
+        @Override
+        public int getSkinId() {
+            return 17;
+        }
+
+        @Override
+        public float getDropItemScale() {
+            return 0.05f;
         }
     }
 }
