@@ -53,7 +53,7 @@
             <artifactId>powernukkitx</artifactId>
             <version>1.6.0.0-PNX</version>
             <scope>system</scope>
-            <systemPath>${project.basedir}/lib/powernukkitx-1.6.0.0-PNX-sources.jar</systemPath>
+            <systemPath>${project.basedir}/lib/powernukkitx-1.6.0.0-PNX.jar</systemPath>
         </dependency>
 
         <!-- Annotations -->
