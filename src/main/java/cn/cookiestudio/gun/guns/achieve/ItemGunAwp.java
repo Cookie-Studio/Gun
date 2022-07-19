@@ -2,7 +2,6 @@ package cn.cookiestudio.gun.guns.achieve;
 
 import cn.cookiestudio.gun.guns.ItemGunBase;
 import cn.cookiestudio.gun.guns.ItemMagBase;
-import cn.nukkit.item.ItemTool;
 import lombok.Getter;
 
 @Getter

@@ -13,13 +13,9 @@ import cn.nukkit.command.data.CommandParameter;
 import cn.nukkit.form.element.*;
 import cn.nukkit.form.response.FormResponseCustom;
 import cn.nukkit.form.response.FormResponseSimple;
-import cn.nukkit.level.ParticleEffect;
 
-import java.sql.Array;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class GunCommand extends Command {
     public GunCommand(String name) {

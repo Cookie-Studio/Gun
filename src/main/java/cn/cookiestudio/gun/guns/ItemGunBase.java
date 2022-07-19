@@ -5,29 +5,23 @@ import cn.cookiestudio.gun.GunPlugin;
 import cn.cookiestudio.gun.playersetting.PlayerSettingMap;
 import cn.nukkit.Player;
 import cn.nukkit.Server;
-import cn.nukkit.entity.Entity;
 import cn.nukkit.entity.item.EntityItem;
 import cn.nukkit.event.EventHandler;
 import cn.nukkit.event.EventPriority;
-import cn.nukkit.event.entity.EntityDeathEvent;
 import cn.nukkit.event.entity.ItemSpawnEvent;
-import cn.nukkit.event.player.*;
-import cn.nukkit.item.*;
+import cn.nukkit.event.player.PlayerAnimationEvent;
+import cn.nukkit.event.player.PlayerInteractEvent;
+import cn.nukkit.event.player.PlayerItemHeldEvent;
+import cn.nukkit.item.Item;
 import cn.nukkit.item.customitem.ItemCustomEdible;
-import cn.nukkit.level.GameRule;
-import cn.nukkit.level.Level;
-import cn.nukkit.math.MathHelper;
 import cn.nukkit.math.Vector3;
-import cn.nukkit.nbt.NBTIO;
 import cn.nukkit.nbt.tag.CompoundTag;
 import cn.nukkit.network.protocol.AnimatePacket;
 import cn.nukkit.potion.Effect;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.*;
-import java.util.concurrent.ThreadLocalRandom;
-import java.util.stream.Collectors;
+import java.util.Map;
 
 @Setter
 @Getter

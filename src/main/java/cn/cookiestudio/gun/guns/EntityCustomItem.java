@@ -1,21 +1,10 @@
 package cn.cookiestudio.gun.guns;
 
-import cn.cookiestudio.gun.GunPlugin;
-import cn.nukkit.Player;
-import cn.nukkit.entity.Entity;
-import cn.nukkit.entity.EntityHuman;
-import cn.nukkit.entity.EntityPhysical;
 import cn.nukkit.entity.custom.CustomEntity;
 import cn.nukkit.entity.custom.CustomEntityDefinition;
 import cn.nukkit.entity.data.IntEntityData;
-import cn.nukkit.entity.data.StringEntityData;
 import cn.nukkit.entity.item.EntityItem;
-import cn.nukkit.item.Item;
-import cn.nukkit.level.format.Chunk;
 import cn.nukkit.level.format.FullChunk;
-import cn.nukkit.level.format.generic.BaseChunk;
-import cn.nukkit.level.format.generic.BaseFullChunk;
-import cn.nukkit.math.Vector3;
 import cn.nukkit.nbt.tag.CompoundTag;
 import cn.nukkit.network.protocol.AddEntityPacket;
 import cn.nukkit.network.protocol.DataPacket;

@@ -1,8 +1,5 @@
 package cn.cookiestudio.gun;
 
-import cn.nukkit.event.EventHandler;
-import cn.nukkit.event.server.DataPacketReceiveEvent;
-
 public class Listener implements cn.nukkit.event.Listener {
 //    @EventHandler
 //    public void onDataPackReceive(DataPacketReceiveEvent event){

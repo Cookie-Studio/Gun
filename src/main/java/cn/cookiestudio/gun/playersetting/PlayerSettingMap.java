@@ -1,6 +1,5 @@
 package cn.cookiestudio.gun.playersetting;
 
-import cn.nukkit.level.ParticleEffect;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
