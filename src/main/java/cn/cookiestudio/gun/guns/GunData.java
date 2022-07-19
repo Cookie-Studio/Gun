@@ -232,7 +232,8 @@ public class GunData {
             for (Position hitPos : hitParticleList) {
                 hitPos.getLevel().addParticle(new DestroyBlockParticle(hitPos, Block.get(152)));
             }
-            blocked.getLevel().addParticle(new DestroyBlockParticle(blockedPos,blocked));
+            if(blocked != null)
+                blocked.getLevel().addParticle(new DestroyBlockParticle(blockedPos,blocked));
             map.put(particle, ammoParticleList);
             Position fireSmokePos = Position.fromObject(BVector3.fromLocation(pos1, 0.8).addToPos(pos1).add(0, 1.62, 0),pos1.level);
             if (GunPlugin.getInstance().getPlayerSettingPool().getSettings().get(player.getName()).isOpenMuzzleParticle())

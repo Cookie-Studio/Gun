@@ -6,7 +6,7 @@
 
     <groupId>cn.cookiestudio</groupId>
     <artifactId>Gun</artifactId>
-    <version>2.0.0-PNX</version>
+    <version>2.0.1-PNX</version>
 
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
