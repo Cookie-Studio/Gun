@@ -72,8 +72,7 @@
             <artifactId>powernukkitx</artifactId>
             <version>1.6.0.0-PNX</version>
             <scope>system</scope>
-            <systemPath>${project.basedir}/lib/powernukkitx.jar</systemPath>
-
+            <systemPath>${project.basedir}/lib/powernukkitx-1.6.0.0-PNX-shaded.jar</systemPath>
         </dependency>
 
         <!-- Annotations -->
