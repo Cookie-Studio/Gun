@@ -71,6 +71,9 @@
             <groupId>cn.powernukkitx</groupId>
             <artifactId>powernukkitx</artifactId>
             <version>1.6.0.0-PNX</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/lib/powernukkitx.jar</systemPath>
+
         </dependency>
 
         <!-- Annotations -->
@@ -93,6 +96,8 @@
             <groupId>cn.cookiestudio</groupId>
             <artifactId>Easy4Form</artifactId>
             <version>1.0.3</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/lib/Easy4Form.jar</systemPath>
         </dependency>
     </dependencies>
 

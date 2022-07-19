@@ -1,12 +1,14 @@
 package cn.cookiestudio.gun;
 
 import cn.cookiestudio.gun.command.GunCommand;
+import cn.cookiestudio.gun.guns.EntityCustomItem;
 import cn.cookiestudio.gun.guns.GunData;
 import cn.cookiestudio.gun.guns.ItemGunBase;
 import cn.cookiestudio.gun.guns.achieve.*;
 import cn.cookiestudio.gun.playersetting.PlayerSettingPool;
 import cn.nukkit.Player;
 import cn.nukkit.Server;
+import cn.nukkit.entity.Entity;
 import cn.nukkit.entity.data.Skin;
 import cn.nukkit.event.EventHandler;
 import cn.nukkit.event.server.DataPacketReceiveEvent;
@@ -36,8 +38,7 @@ public class GunPlugin extends PluginBase {
     private Map<Class<? extends ItemGunBase>, GunData> gunDataMap = new HashMap<>();
     private Map<String, Class<? extends ItemGunBase>> stringClassMap = new HashMap<>();
     private CoolDownTimer coolDownTimer;
-    private Skin crateSkin;
-    private Skin ammoBoxSkin;
+
     private PlayerSettingPool playerSettingPool;
     private FireTask fireTask;
 
@@ -58,13 +59,17 @@ public class GunPlugin extends PluginBase {
         instance = this;
         playerSettingPool = new PlayerSettingPool();
         fireTask = new FireTask(this);
-        initCrateSkin();
         copyResource();
         config = new Config(getDataFolder() + "/config.yml");
         loadGunData();
+        registerEntity();
         registerListener();
         registerCommand();
         coolDownTimer = new CoolDownTimer();
+    }
+
+    private void registerEntity() {
+        Entity.registerCustomEntity(EntityCustomItem.DEFINITION, EntityCustomItem.class);
     }
 
     private void copyResource(){
@@ -109,29 +114,6 @@ public class GunPlugin extends PluginBase {
         });
     }
 
-    private void initCrateSkin(){
-        crateSkin = new Skin();
-        try {
-            crateSkin.setTrusted(true);
-            crateSkin.setGeometryData(new String(getBytes(GunPlugin.getInstance().getResource("resources/model/crate/skin.json"))));
-            crateSkin.setGeometryName("geometry.crate");
-            crateSkin.setSkinId("crate");
-            crateSkin.setSkinData(ImageIO.read(GunPlugin.getInstance().getResource("resources/model/crate/skin.png")));
-        } catch (Throwable e) {
-            e.printStackTrace();
-        }
-
-        ammoBoxSkin = new Skin();
-        try {
-            ammoBoxSkin.setTrusted(true);
-            ammoBoxSkin.setGeometryData(new String(getBytes(GunPlugin.getInstance().getResource("resources/model/ammobox/skin.json"))));
-            ammoBoxSkin.setGeometryName("geometry.ammobox");
-            ammoBoxSkin.setSkinId("ammobox");
-            ammoBoxSkin.setSkinData(ImageIO.read(GunPlugin.getInstance().getResource("resources/model/ammobox/skin.png")));
-        } catch (Throwable e) {
-            e.printStackTrace();
-        }
-    }
 
     private static byte[] getBytes(InputStream inStream) throws Exception{
         ByteArrayOutputStream outStream = new ByteArrayOutputStream();

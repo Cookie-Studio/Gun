@@ -5,16 +5,20 @@ import cn.cookiestudio.gun.GunPlugin;
 import cn.cookiestudio.gun.playersetting.PlayerSettingMap;
 import cn.nukkit.Player;
 import cn.nukkit.Server;
+import cn.nukkit.entity.Entity;
+import cn.nukkit.entity.item.EntityItem;
 import cn.nukkit.event.EventHandler;
-import cn.nukkit.event.entity.EntityDamageByEntityEvent;
-import cn.nukkit.event.entity.EntityDamageEvent;
+import cn.nukkit.event.EventPriority;
 import cn.nukkit.event.entity.EntityDeathEvent;
+import cn.nukkit.event.entity.ItemSpawnEvent;
 import cn.nukkit.event.player.*;
 import cn.nukkit.item.*;
 import cn.nukkit.item.customitem.ItemCustomEdible;
 import cn.nukkit.level.GameRule;
-import cn.nukkit.level.Position;
+import cn.nukkit.level.Level;
+import cn.nukkit.math.MathHelper;
 import cn.nukkit.math.Vector3;
+import cn.nukkit.nbt.NBTIO;
 import cn.nukkit.nbt.tag.CompoundTag;
 import cn.nukkit.network.protocol.AnimatePacket;
 import cn.nukkit.potion.Effect;
@@ -22,11 +26,13 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.util.*;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 
 @Setter
 @Getter
 public abstract class ItemGunBase extends ItemCustomEdible {
+
 
     protected GunData gunData;
 
@@ -74,6 +80,9 @@ public abstract class ItemGunBase extends ItemCustomEdible {
         super("gun:" + name,name,name);
     }
 
+    public abstract int getSkinId();
+
+    public abstract float getDropItemScale();
     @Override
     public boolean canAlwaysEat() {
         return true;
@@ -174,6 +183,24 @@ public abstract class ItemGunBase extends ItemCustomEdible {
             }
         }
 
+        @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+        public void onItemSpawn(ItemSpawnEvent e) {
+            Item item = e.getEntity().getItem();
+            EntityItem drop = e.getEntity();
+            if (drop instanceof EntityCustomItem) {
+                return;
+            }
+            if (item instanceof ItemGunBase gun) {
+                EntityCustomItem customDrop = new EntityCustomItem(drop.getChunk(), drop.namedTag, gun.getSkinId(), gun.getDropItemScale());
+
+                drop.kill(); // 不知道为啥, 用close会NPE
+                customDrop.spawnToAll();
+            } else if (item instanceof ItemMagBase mag) {
+                EntityCustomItem customDrop = new EntityCustomItem(drop.getChunk(), drop.namedTag, mag.getSkinId(), mag.getDropItemScale());
+                drop.kill();
+                customDrop.spawnToAll();
+            }
+        }
 
         @EventHandler
         public void onPlayerInteract(PlayerInteractEvent event) {
@@ -183,67 +210,10 @@ public abstract class ItemGunBase extends ItemCustomEdible {
             }
         }
 
-        @EventHandler
-        public void onPlayerDropItem(PlayerDropItemEvent event){
-            if (event.getItem() instanceof ItemGunBase){
-                event.setCancelled();
-                if (event.getPlayer().getInventory().getItemInHand().getId() != event.getItem().getId())
-                    return;
-                ItemGunBase itemGun = (ItemGunBase) event.getPlayer().getInventory().getItemInHand();
-                event.getPlayer().getInventory().clear(event.getPlayer().getInventory().getHeldItemIndex());
-                dropGun(itemGun,event.getPlayer(),0);
-            }
-            if (event.getItem() instanceof ItemMagBase){
-                event.setCancelled();
-                if (event.getPlayer().getInventory().getItemInHand().getId() != event.getItem().getId())
-                    return;
-                ItemMagBase itemMag = (ItemMagBase) event.getPlayer().getInventory().getItemInHand();
-                if (itemMag.getCount() - event.getItem().getCount() > 0){
-                    itemMag.setCount(itemMag.getCount() - event.getItem().getCount());
-                    event.getPlayer().getInventory().setItemInHand(itemMag);
-                }else{
-                    event.getPlayer().getInventory().clear(event.getPlayer().getInventory().getHeldItemIndex());
-                }
-                dropMag((ItemMagBase) event.getItem(),event.getPlayer(),0);
-            }
-        }
 
-        @EventHandler
-        public void onPlayerDeath(PlayerDeathEvent event){
-            List<Item> newDrops = new ArrayList<>();
-            for (Item item : event.getDrops()) {
-                if (item instanceof ItemGunBase gun) {
-                    dropGun(gun,event.getEntity(),1);
-                } else if (item instanceof ItemMagBase mag) {
-                    dropMag(mag,event.getEntity(),1);
-                } else {
-                    newDrops.add(item);
-                }
-            }
-            event.setDrops(newDrops.toArray(new Item[0]));
-        }
 
-        private void dropGun(ItemGunBase gun, Position pos,double offset){
-            EntityGun entityGun;
-            if (offset!=0){
-                Random random = new Random();
-                entityGun = new EntityGun(pos.getChunk(), EntityGun.getDefaultNBT(pos.add(random.nextDouble(offset),0,random.nextDouble(offset))), gun.getGunData(), gun);
-            }else{
-                entityGun = new EntityGun(pos.getChunk(), EntityGun.getDefaultNBT(pos), gun.getGunData(), gun);
-            }
-            entityGun.spawnToAll();
-        }
 
-        private void dropMag(ItemMagBase mag, Position pos,double offset){
-            EntityMag entityMag;
-            if (offset!=0){
-                Random random = new Random();
-                entityMag = new EntityMag(pos.getChunk(), EntityMag.getDefaultNBT(pos.add(random.nextDouble(offset),0,random.nextDouble(offset))), mag);
-            }else{
-                entityMag = new EntityMag(pos.getChunk(), EntityMag.getDefaultNBT(pos), mag);
-            }
-            entityMag.spawnToAll();
-        }
+
 
 //        @EventHandler
 //        public void onPlayerInteractEntityGunOrMag(EntityDamageByEntityEvent event){
@@ -269,37 +239,12 @@ public abstract class ItemGunBase extends ItemCustomEdible {
 //        }
 
         @EventHandler
-        public void onEntityGunOrMagHurt(EntityDamageEvent event){
-            if (event.getEntity() instanceof EntityGun || event.getEntity() instanceof EntityMag){
-                if (!(event instanceof EntityDamageByEntityEvent))
-                    event.setCancelled();
-            }
-        }
-
-        @EventHandler
         public void onPlayerHeldItem(PlayerItemHeldEvent event){
             if (!(event.getItem() instanceof ItemGunBase))
                 event.getPlayer().removeEffect(Effect.SLOWNESS);
         }
 
-        @EventHandler
-        public void onEntityDead(EntityDeathEvent event){
-            if (event.getEntity().getLevel().getGameRules().getBoolean(GameRule.KEEP_INVENTORY))
-                return;
-            Arrays.stream(event.getDrops()).forEach(item -> {
-                if (item instanceof ItemGunBase){
-                    ItemGunBase itemGun = (ItemGunBase) item;
-                    EntityGun entityGun = new EntityGun(event.getEntity().getChunk(), EntityGun.getDefaultNBT(event.getEntity()),itemGun.getGunData(),itemGun);
-                    entityGun.spawnToAll();
-                }
-                if (item instanceof ItemMagBase){
-                    ItemMagBase itemMag = (ItemMagBase) item;
-                    EntityMag entityMag = new EntityMag(event.getEntity().getChunk(), EntityGun.getDefaultNBT(event.getEntity()), itemMag);
-                    entityMag.spawnToAll();
-                }
-            });
-            event.setDrops(Arrays.stream(event.getDrops()).filter(item -> !(item instanceof ItemGunBase || item instanceof ItemMagBase)).collect(Collectors.toList()).toArray(new Item[0]));
-        }
+
     }
 
     public enum GunInteractAction{
@@ -308,4 +253,5 @@ public abstract class ItemGunBase extends ItemCustomEdible {
         COOLING,
         EMPTY_GUN
     }
+
 }
