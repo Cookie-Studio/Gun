@@ -126,32 +126,46 @@ public abstract class ItemGunBase extends ItemCustomEdible {
             GunPlugin.getInstance().getCoolDownTimer().addCoolDown(player, (int) (itemGun.getGunData().getFireCoolDown() * 20), () -> {}, () -> CoolDownTimer.Operator.NO_ACTION, CoolDownTimer.Type.FIRECOOLDOWN);
             return GunInteractAction.FIRE;
         }
-        if (itemGun.getAmmoCount() == 0 && player.getInventory().contains(Item.fromString("gun:" + itemGun.getGunData().getMagName()))) {//todo:debug
-            itemGun.getGunData().startReload(player);
-            GunPlugin.getInstance().getCoolDownTimer().addCoolDown(player, (int) (itemGun.getGunData().getReloadTime() * 20), () -> {
-                itemGun.getGunData().reloadFinish(player);
-                itemGun.setAmmoCount(itemGun.getGunData().getMagSize());
-                player.getInventory().setItem(player.getInventory().getHeldItemIndex(),itemGun);//because some unknown reasons,if don't do that there will be some problems...fuck you nukkit
-                for (Map.Entry<Integer,Item> entry : player.getInventory().getContents().entrySet()){
-                    Item item = entry.getValue();
-                    int slot = entry.getKey();
-                    if (item.equals(Item.fromString("gun:" + itemGun.getGunData().getMagName()))){//todo:debug
-                        item.setCount(item.count - 1);
-                        player.getInventory().setItem(slot,item);
-                        break;
-                    }
-                }
-            }, () -> {
-                player.sendMessage("§creload interrupt!");
-                return CoolDownTimer.Operator.INTERRUPT;
-            }, CoolDownTimer.Type.RELOAD);
-            return GunInteractAction.RELOAD;
-        }
-        if (itemGun.getAmmoCount() == 0){
-            itemGun.getGunData().emptyGun(player);
-            return GunInteractAction.EMPTY_GUN;
+        if (itemGun.getAmmoCount() == 0) {//todo:debug
+            if(itemGun.reload(player))
+                return GunInteractAction.RELOAD;
+            else
+                return GunInteractAction.EMPTY_GUN;
         }
         return null;
+    }
+
+    public boolean reload(Player player){
+        CoolDownTimer coolDownTimer = GunPlugin.getInstance().getCoolDownTimer();
+        if (coolDownTimer.isCooling(player)) {
+            CoolDownTimer.CoolDown coolDown = coolDownTimer.getCoolDownMap().get(player);
+            if (coolDown.getType() == CoolDownTimer.Type.RELOAD)
+                coolDownTimer.interrupt(player);
+            return false;
+        }
+        if (!player.getInventory().contains(Item.fromString("gun:" + this.getGunData().getMagName()))) {
+            this.getGunData().emptyGun(player);
+            return false;
+        }
+        this.getGunData().startReload(player);
+        GunPlugin.getInstance().getCoolDownTimer().addCoolDown(player, (int) (this.getGunData().getReloadTime() * 20), () -> {
+            this.getGunData().reloadFinish(player);
+            this.setAmmoCount(this.getGunData().getMagSize());
+            player.getInventory().setItem(player.getInventory().getHeldItemIndex(),this);
+            for (Map.Entry<Integer,Item> entry : player.getInventory().getContents().entrySet()){
+                Item item = entry.getValue();
+                int slot = entry.getKey();
+                if (item.equals(Item.fromString("gun:" + this.getGunData().getMagName()))){//todo:debug
+                    item.setCount(item.count - 1);
+                    player.getInventory().setItem(slot,item);
+                    break;
+                }
+            }
+        }, () -> {
+            player.sendMessage("§creload interrupt!");
+            return CoolDownTimer.Operator.INTERRUPT;
+        }, CoolDownTimer.Type.RELOAD);
+        return true;
     }
 
     public int getAmmoCount(){
@@ -177,9 +191,9 @@ public abstract class ItemGunBase extends ItemCustomEdible {
             if (event.getAnimationType() == AnimatePacket.Action.SWING_ARM && event.getPlayer().getInventory().getItemInHand() instanceof ItemGunBase) {
                 if (GunPlugin.getInstance().getPlayerSettingPool().getSettings().get(event.getPlayer().getName()).getFireMode() == PlayerSettingMap.FireMode.AUTO){
                     GunPlugin.getInstance().getFireTask().changeState(event.getPlayer());
-                }/*else {
-                    ((ItemGunBase) event.getPlayer().getInventory().getItemInHand()).interact(event.getPlayer());
-                }*/
+                }else {
+                    ((ItemGunBase) event.getPlayer().getInventory().getItemInHand()).reload(event.getPlayer());
+                }
             }
         }
 
@@ -209,34 +223,6 @@ public abstract class ItemGunBase extends ItemCustomEdible {
                 itemGun.interact(event.getPlayer());
             }
         }
-
-
-
-
-
-
-//        @EventHandler
-//        public void onPlayerInteractEntityGunOrMag(EntityDamageByEntityEvent event){
-//            if (event.getEntity() instanceof EntityGun && event.getDamager() instanceof Player){
-//                event.setCancelled();
-//                EntityGun entityGun = (EntityGun) event.getEntity();
-//                int empty = ((Player) event.getDamager()).getInventory().firstEmpty(null);
-//                if (empty != -1){
-//                    ((Player) event.getDamager()).getInventory().setItem(empty,entityGun.getItemGun());
-//                }
-//                event.getEntity().close();
-//            }
-//            if (event.getEntity() instanceof EntityMag && event.getDamager() instanceof Player){
-//                event.setCancelled();
-//                EntityMag entityMag = (EntityMag) event.getEntity();
-//                ItemMagBase itemMag = entityMag.getItemMag();
-//                int empty = ((Player) event.getDamager()).getInventory().firstEmpty(null);
-//                if (empty != -1){
-//                    ((Player) event.getDamager()).getInventory().setItem(empty,itemMag);
-//                }
-//                event.getEntity().close();
-//            }
-//        }
 
         @EventHandler
         public void onPlayerHeldItem(PlayerItemHeldEvent event){

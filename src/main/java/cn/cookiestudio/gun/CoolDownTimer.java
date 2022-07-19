@@ -23,17 +23,8 @@ public class CoolDownTimer {
             @EventHandler
             public void onPlayerInterruptCoolDown(PlayerItemHeldEvent event) {
                 if (coolDownMap.containsKey(event.getPlayer())) {
-                    Operator operator = coolDownMap.get(event.getPlayer()).onInterrupt.get();
-                    switch (operator) {
-                        case INTERRUPT:
-                            coolDownMap.remove(event.getPlayer());
-                            break;
-                        case NO_ACTION:
-                            break;
-                        case CANCELLED_EVENT:
-                            event.setCancelled();
-                            break;
-                    }
+                    if (interrupt(event.getPlayer()) == Operator.CANCELLED_EVENT)
+                        event.setCancelled();
                 }
             }
         }, GunPlugin.getInstance());
@@ -45,6 +36,20 @@ public class CoolDownTimer {
                 }
             });
         }, 1);
+    }
+
+    public Operator interrupt(Player player){
+        Operator operator = coolDownMap.get(player).onInterrupt.get();
+        switch (operator) {
+            case INTERRUPT:
+                coolDownMap.remove(player);
+                break;
+            case NO_ACTION:
+                break;
+            case CANCELLED_EVENT:
+                break;
+        }
+        return operator;
     }
 
     public boolean isCooling(Player player) {

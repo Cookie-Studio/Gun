@@ -194,9 +194,16 @@ public class GunData {
             List<Position> ammoParticleList = new CopyOnWriteArrayList<>();
             List<Position> hitParticleList = new CopyOnWriteArrayList<>();
             BVector3 face = BVector3.fromLocation(pos1, 0.8);
+            Block blocked = null;
+            Position blockedPos = null;
             for (int i = 0; i <= range * 20; i++) {
+                Position lastAmmoPos = Position.fromObject(face.addToPos(pos1).add(0, 1.62, 0),pos1.level);
                 Position ammoPos = Position.fromObject(face.extend(0.05).addToPos(pos1).add(0, 1.62, 0),pos1.level);
-                if (!ammoPos.getLevelBlock().canPassThrough()) break;
+                if (!ammoPos.getLevelBlock().canPassThrough()) {
+                    blocked = ammoPos.getLevelBlock();
+                    blockedPos = lastAmmoPos.clone();
+                    break;
+                }
                 ammoMap.put(i, ammoPos);
                 if (i % 4 == 0) ammoParticleList.add(ammoPos);
             }
@@ -225,6 +232,7 @@ public class GunData {
             for (Position hitPos : hitParticleList) {
                 hitPos.getLevel().addParticle(new DestroyBlockParticle(hitPos, Block.get(152)));
             }
+            blocked.getLevel().addParticle(new DestroyBlockParticle(blockedPos,blocked));
             map.put(particle, ammoParticleList);
             Position fireSmokePos = Position.fromObject(BVector3.fromLocation(pos1, 0.8).addToPos(pos1).add(0, 1.62, 0),pos1.level);
             if (GunPlugin.getInstance().getPlayerSettingPool().getSettings().get(player.getName()).isOpenMuzzleParticle())
