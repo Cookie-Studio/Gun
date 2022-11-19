@@ -11,9 +11,9 @@ public class ItemGunP90 extends ItemGunBase {
         super(getGunData(ItemGunP90.class).getGunName());
         gunData = getGunData(this.getClass());
         this.setCustomName(gunData.getGunName());
-        if (!this.getNamedTag().contains("ammoCount")){
+        if (!this.getNamedTag().contains("ammoCount")) {
             this.setAmmoCount(this.getGunData().getMagSize());
-        }else{
+        } else {
             this.setAmmoCount(this.getAmmoCount());
         }
     }

@@ -13,7 +13,9 @@ import cn.nukkit.event.player.PlayerAnimationEvent;
 import cn.nukkit.event.player.PlayerInteractEvent;
 import cn.nukkit.event.player.PlayerItemHeldEvent;
 import cn.nukkit.item.Item;
+import cn.nukkit.item.customitem.CustomItemDefinition;
 import cn.nukkit.item.customitem.ItemCustomEdible;
+import cn.nukkit.item.customitem.data.ItemCreativeCategory;
 import cn.nukkit.math.Vector3;
 import cn.nukkit.nbt.tag.CompoundTag;
 import cn.nukkit.network.protocol.AnimatePacket;
@@ -28,17 +30,14 @@ import java.util.Map;
 public abstract class ItemGunBase extends ItemCustomEdible {
 
 
-    protected GunData gunData;
-
     static {
         Server.getInstance().getPluginManager().registerEvents(new Listener(), GunPlugin.getInstance());
         Server.getInstance().getScheduler().scheduleRepeatingTask(GunPlugin.getInstance(), () -> {
             Server.getInstance().getOnlinePlayers().values().forEach(player -> {
-                if (player.getInventory().getItemInHand() instanceof ItemGunBase) {
-                    ItemGunBase itemGun = (ItemGunBase) player.getInventory().getItemInHand();
+                if (player.getInventory().getItemInHand() instanceof ItemGunBase itemGun) {
                     if (player.isSneaking()) {
                         itemGun.getGunData().addAimingSlownessEffect(player);
-                    }else {
+                    } else {
                         itemGun.getGunData().addWalkingSlownessEffect(player);
                     }
                     if (!GunPlugin.getInstance().getCoolDownTimer().isCooling(player) || GunPlugin.getInstance().getCoolDownTimer().getCoolDownMap().get(player).getType() != CoolDownTimer.Type.RELOAD) {
@@ -48,17 +47,17 @@ public abstract class ItemGunBase extends ItemCustomEdible {
                             } else {
                                 player.sendActionBar("<" + itemGun.getAmmoCount() + "/" + itemGun.getGunData().getMagSize() + ">\n§dAUTO MODE: §aON");
                             }
-                        }else{
+                        } else {
                             player.sendActionBar("<" + itemGun.getAmmoCount() + "/" + itemGun.getGunData().getMagSize() + ">");
                         }
                         return;
                     }
                     CoolDownTimer.CoolDown coolDown = GunPlugin.getInstance().getCoolDownTimer().getCoolDownMap().get(player);
-                    if (coolDown.getType() == CoolDownTimer.Type.RELOAD){
+                    if (coolDown.getType() == CoolDownTimer.Type.RELOAD) {
                         StringBuilder stringBuilder = new StringBuilder();
                         stringBuilder.append("RELOAD: §a");
-                        int bound = (int)(30.0 * ((double)coolDown.coolDownTick / (itemGun.getGunData().getReloadTime() * 20)));
-                        for (int i = 30;i >= 1;i--){
+                        int bound = (int) (30.0 * ((double) coolDown.coolDownTick / (itemGun.getGunData().getReloadTime() * 20)));
+                        for (int i = 30; i >= 1; i--) {
                             if (i < bound) stringBuilder.append("|");
                             if (i == bound) stringBuilder.append("|§c");
                             if (i > bound) stringBuilder.append("|");
@@ -70,13 +69,20 @@ public abstract class ItemGunBase extends ItemCustomEdible {
         }, 1);
     }
 
-    public ItemGunBase(String name){
-        super("gun:" + name,name,name);
+    protected GunData gunData;
+
+    public ItemGunBase(String name) {
+        super("gun:" + name, name, name);
+    }
+
+    public static GunData getGunData(Class<? extends ItemGunBase> clazz) {
+        return GunPlugin.getInstance().getGunDataMap().get(clazz);
     }
 
     public abstract int getSkinId();
 
     public abstract float getDropItemScale();
+
     @Override
     public boolean canAlwaysEat() {
         return true;
@@ -102,26 +108,32 @@ public abstract class ItemGunBase extends ItemCustomEdible {
         return 1;
     }
 
-    public static GunData getGunData(Class<? extends ItemGunBase> clazz) {
-        return GunPlugin.getInstance().getGunDataMap().get(clazz);
+    @Override
+    public CustomItemDefinition getDefinition() {
+        return CustomItemDefinition
+                .edibleBuilder(this, ItemCreativeCategory.EQUIPMENT)
+                .creativeGroup("itemGroup.name.gun")
+                .allowOffHand(true)
+                .build();
     }
 
     public GunInteractAction interact(Player player) {
-        if (GunPlugin.getInstance().getCoolDownTimer().isCooling(player)){
+        if (GunPlugin.getInstance().getCoolDownTimer().isCooling(player)) {
             return GunInteractAction.COOLING;
         }
-        ItemGunBase itemGun = (ItemGunBase)player.getInventory().getItemInHand();
+        ItemGunBase itemGun = (ItemGunBase) player.getInventory().getItemInHand();
         if (itemGun.getAmmoCount() > 0) {
-            itemGun.getGunData().fire(player,itemGun);
+            itemGun.getGunData().fire(player, itemGun);
             if (player.getGamemode() != 1) {
                 itemGun.setAmmoCount(itemGun.getAmmoCount() - 1);
             }
-            player.getInventory().setItem(player.getInventory().getHeldItemIndex(),itemGun);
-            GunPlugin.getInstance().getCoolDownTimer().addCoolDown(player, (int) (itemGun.getGunData().getFireCoolDown() * 20), () -> {}, () -> CoolDownTimer.Operator.NO_ACTION, CoolDownTimer.Type.FIRECOOLDOWN);
+            player.getInventory().setItem(player.getInventory().getHeldItemIndex(), itemGun);
+            GunPlugin.getInstance().getCoolDownTimer().addCoolDown(player, (int) (itemGun.getGunData().getFireCoolDown() * 20), () -> {
+            }, () -> CoolDownTimer.Operator.NO_ACTION, CoolDownTimer.Type.FIRECOOLDOWN);
             return GunInteractAction.FIRE;
         }
         if (itemGun.getAmmoCount() == 0) {//todo:debug
-            if(itemGun.reload(player))
+            if (itemGun.reload(player))
                 return GunInteractAction.RELOAD;
             else
                 return GunInteractAction.EMPTY_GUN;
@@ -129,7 +141,7 @@ public abstract class ItemGunBase extends ItemCustomEdible {
         return null;
     }
 
-    public boolean reload(Player player){
+    public boolean reload(Player player) {
         CoolDownTimer coolDownTimer = GunPlugin.getInstance().getCoolDownTimer();
         if (coolDownTimer.isCooling(player)) {
             CoolDownTimer.CoolDown coolDown = coolDownTimer.getCoolDownMap().get(player);
@@ -145,13 +157,13 @@ public abstract class ItemGunBase extends ItemCustomEdible {
         GunPlugin.getInstance().getCoolDownTimer().addCoolDown(player, (int) (this.getGunData().getReloadTime() * 20), () -> {
             this.getGunData().reloadFinish(player);
             this.setAmmoCount(this.getGunData().getMagSize());
-            player.getInventory().setItem(player.getInventory().getHeldItemIndex(),this);
-            for (Map.Entry<Integer,Item> entry : player.getInventory().getContents().entrySet()){
+            player.getInventory().setItem(player.getInventory().getHeldItemIndex(), this);
+            for (Map.Entry<Integer, Item> entry : player.getInventory().getContents().entrySet()) {
                 Item item = entry.getValue();
                 int slot = entry.getKey();
-                if (item.equals(Item.fromString("gun:" + this.getGunData().getMagName()))){//todo:debug
+                if (item.equals(Item.fromString("gun:" + this.getGunData().getMagName()))) {//todo:debug
                     item.setCount(item.count - 1);
-                    player.getInventory().setItem(slot,item);
+                    player.getInventory().setItem(slot, item);
                     break;
                 }
             }
@@ -162,30 +174,37 @@ public abstract class ItemGunBase extends ItemCustomEdible {
         return true;
     }
 
-    public int getAmmoCount(){
+    public int getAmmoCount() {
         if (this.getNamedTag() != null) {
             return this.getNamedTag().getInt("ammoCount");
         }
         return 0;
     }
 
-    public void setAmmoCount(int count){
+    public void setAmmoCount(int count) {
         if (this.getNamedTag() != null) {
             this.setNamedTag(this.getNamedTag().putInt("ammoCount", count));
-        }else {
+        } else {
             this.setNamedTag(new CompoundTag().putInt("ammoCount", count));
         }
     }
 
     public abstract ItemMagBase getItemMagObject();
 
+    public enum GunInteractAction {
+        FIRE,
+        RELOAD,
+        COOLING,
+        EMPTY_GUN
+    }
+
     private static class Listener implements cn.nukkit.event.Listener {
         @EventHandler
         public void onPlayerAnimation(PlayerAnimationEvent event) {
             if (event.getAnimationType() == AnimatePacket.Action.SWING_ARM && event.getPlayer().getInventory().getItemInHand() instanceof ItemGunBase) {
-                if (GunPlugin.getInstance().getPlayerSettingPool().getSettings().get(event.getPlayer().getName()).getFireMode() == PlayerSettingMap.FireMode.AUTO){
+                if (GunPlugin.getInstance().getPlayerSettingPool().getSettings().get(event.getPlayer().getName()).getFireMode() == PlayerSettingMap.FireMode.AUTO) {
                     GunPlugin.getInstance().getFireTask().changeState(event.getPlayer());
-                }else {
+                } else {
                     ((ItemGunBase) event.getPlayer().getInventory().getItemInHand()).reload(event.getPlayer());
                 }
             }
@@ -212,26 +231,18 @@ public abstract class ItemGunBase extends ItemCustomEdible {
 
         @EventHandler
         public void onPlayerInteract(PlayerInteractEvent event) {
-            if (event.getPlayer().getInventory().getItemInHand() instanceof ItemGunBase && (event.getAction() == PlayerInteractEvent.Action.RIGHT_CLICK_AIR || event.getAction() == PlayerInteractEvent.Action.RIGHT_CLICK_BLOCK)){
-                ItemGunBase itemGun = (ItemGunBase) event.getPlayer().getInventory().getItemInHand();
+            if (event.getPlayer().getInventory().getItemInHand() instanceof ItemGunBase itemGun && (event.getAction() == PlayerInteractEvent.Action.RIGHT_CLICK_AIR || event.getAction() == PlayerInteractEvent.Action.RIGHT_CLICK_BLOCK)) {
                 itemGun.interact(event.getPlayer());
             }
         }
 
         @EventHandler
-        public void onPlayerHeldItem(PlayerItemHeldEvent event){
+        public void onPlayerHeldItem(PlayerItemHeldEvent event) {
             if (!(event.getItem() instanceof ItemGunBase))
                 event.getPlayer().removeEffect(Effect.SLOWNESS);
         }
 
 
-    }
-
-    public enum GunInteractAction{
-        FIRE,
-        RELOAD,
-        COOLING,
-        EMPTY_GUN
     }
 
 }

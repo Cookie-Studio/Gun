@@ -11,9 +11,9 @@ public class ItemGunBarrett extends ItemGunBase {
         super(getGunData(ItemGunBarrett.class).getGunName());
         gunData = getGunData(this.getClass());
         this.setCustomName(gunData.getGunName());
-        if (!this.getNamedTag().contains("ammoCount")){
+        if (!this.getNamedTag().contains("ammoCount")) {
             this.setAmmoCount(this.getGunData().getMagSize());
-        }else{
+        } else {
             this.setAmmoCount(this.getAmmoCount());
         }
     }

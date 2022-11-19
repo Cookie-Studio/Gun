@@ -13,7 +13,7 @@ import java.util.function.Supplier;
 @Getter
 public class CoolDownTimer {
 
-    private Map<Player, CoolDown> coolDownMap = new ConcurrentHashMap<>();
+    private final Map<Player, CoolDown> coolDownMap = new ConcurrentHashMap<>();
 
     {
         Server.getInstance().getPluginManager().registerEvents(new Listener() {
@@ -35,7 +35,7 @@ public class CoolDownTimer {
         }, 1);
     }
 
-    public Operator interrupt(Player player){
+    public Operator interrupt(Player player) {
         Operator operator = coolDownMap.get(player).onInterrupt.get();
         switch (operator) {
             case INTERRUPT:
@@ -58,8 +58,19 @@ public class CoolDownTimer {
         coolDownMap.remove(player);
     }
 
-    public void addCoolDown(Player player, int coolDownTick, Runnable onFinish, Supplier<Operator> onInterrupt,Type type) {
+    public void addCoolDown(Player player, int coolDownTick, Runnable onFinish, Supplier<Operator> onInterrupt, Type type) {
         coolDownMap.put(player, new CoolDown(coolDownTick, onFinish, onInterrupt, type));
+    }
+
+    public enum Operator {
+        INTERRUPT,
+        NO_ACTION,
+        CANCELLED_EVENT
+    }
+
+    public enum Type {
+        RELOAD,
+        FIRECOOLDOWN
     }
 
     @Getter
@@ -75,16 +86,5 @@ public class CoolDownTimer {
             this.onInterrupt = onInterrupt;
             this.type = type;
         }
-    }
-
-    public enum Operator {
-        INTERRUPT,
-        NO_ACTION,
-        CANCELLED_EVENT
-    }
-
-    public enum Type {
-        RELOAD,
-        FIRECOOLDOWN
     }
 }

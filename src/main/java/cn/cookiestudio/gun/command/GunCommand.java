@@ -19,26 +19,26 @@ import java.util.List;
 
 public class GunCommand extends Command {
     public GunCommand(String name) {
-        super(name,"Gun Plugin Command");
+        super(name, "Gun Plugin Command");
         this.setPermission("gun.command");
         this.commandParameters.clear();
         this.commandParameters.put("default", new CommandParameter[]{
-                CommandParameter.newEnum("opt",new String[]{"data","setting"})
+                CommandParameter.newEnum("opt", new String[]{"data", "setting"})
         });
     }
 
     @Override
     public boolean execute(CommandSender commandSender, String s, String[] strings) {
-        if (commandSender instanceof ConsoleCommandSender){
+        if (commandSender instanceof ConsoleCommandSender) {
             commandSender.sendMessage("此命令无法在控制台使用！");
             return true;
         }
-        if (strings.length == 0){
+        if (strings.length == 0) {
             return true;
         }
-        Player player = (Player)commandSender;
+        Player player = (Player) commandSender;
         if (strings[0].equals("data")) {
-            if (!commandSender.isOp()){
+            if (!commandSender.isOp()) {
                 commandSender.sendMessage("你没有足够的权限使用此命令！");
                 return true;
             }
@@ -95,27 +95,27 @@ public class GunCommand extends Command {
             simpleFormBuilder.build().sendToPlayer(player);
             return true;
         }
-        if (strings[0].equals("setting")){
+        if (strings[0].equals("setting")) {
             BFormWindowCustom custom = new BFormWindowCustom("Settings");
             PlayerSettingMap settings = GunPlugin.getInstance().getPlayerSettingPool().getSettings().get(player.getName());
             List<String> list = new ArrayList<>();
             list.add(PlayerSettingMap.FireMode.AUTO.name());
             list.add(PlayerSettingMap.FireMode.MANUAL.name());
-            custom.addElement(new ElementDropdown("开火模式:",list,settings.getFireMode().ordinal()));
-            custom.addElement(new ElementToggle("打开弹道粒子:",settings.isOpenTrajectoryParticle()));
-            custom.addElement(new ElementToggle("打开开火烟雾:",settings.isOpenMuzzleParticle()));
+            custom.addElement(new ElementDropdown("开火模式:", list, settings.getFireMode().ordinal()));
+            custom.addElement(new ElementToggle("打开弹道粒子:", settings.isOpenTrajectoryParticle()));
+            custom.addElement(new ElementToggle("打开开火烟雾:", settings.isOpenMuzzleParticle()));
             custom.setResponseAction((e) -> {
                 if (e.getResponse() == null)
                     return;
                 FormResponseCustom response = (FormResponseCustom) e.getResponse();
-                if(response.getDropdownResponse(0).getElementContent().equals(PlayerSettingMap.FireMode.AUTO.name())){
+                if (response.getDropdownResponse(0).getElementContent().equals(PlayerSettingMap.FireMode.AUTO.name())) {
                     settings.setFireMode(PlayerSettingMap.FireMode.AUTO);
-                }else{
+                } else {
                     settings.setFireMode(PlayerSettingMap.FireMode.MANUAL);
                 }
                 settings.setOpenTrajectoryParticle(response.getToggleResponse(1));
                 settings.setOpenMuzzleParticle(response.getToggleResponse(2));
-                GunPlugin.getInstance().getPlayerSettingPool().write(player.getName(),settings);
+                GunPlugin.getInstance().getPlayerSettingPool().write(player.getName(), settings);
                 player.sendMessage("§aSucceed!");
             });
             custom.sendToPlayer(player);

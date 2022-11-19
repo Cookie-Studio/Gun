@@ -19,9 +19,9 @@ import java.util.Map;
 public class PlayerSettingPool {
 
     private Config config;
-    private Map<String,PlayerSettingMap> settings = new HashMap<>();
+    private final Map<String, PlayerSettingMap> settings = new HashMap<>();
 
-    public PlayerSettingPool(){
+    public PlayerSettingPool() {
         try {
             init();
         } catch (Exception e) {
@@ -29,62 +29,62 @@ public class PlayerSettingPool {
         }
         Server.getInstance().getPluginManager().registerEvents(new Listener() {
             @EventHandler
-            public void onPlayerJoin(PlayerJoinEvent event){
+            public void onPlayerJoin(PlayerJoinEvent event) {
                 String name = event.getPlayer().getName();
-                if (!settings.containsKey(name)){
+                if (!settings.containsKey(name)) {
                     cache(name);
                 }
             }
         }, GunPlugin.getInstance());
-        for (Player player : Server.getInstance().getOnlinePlayers().values()){//reload fixed
+        for (Player player : Server.getInstance().getOnlinePlayers().values()) {//reload fixed
             cache(player.getName());
         }
     }
 
     public void init() throws Exception {
-        Path p = Paths.get(GunPlugin.getInstance().getDataFolder().toString(),"playerSettings.json");
+        Path p = Paths.get(GunPlugin.getInstance().getDataFolder().toString(), "playerSettings.json");
         if (!Files.exists(p))
             Files.createFile(p);
-        this.config = new Config(p.toFile(),Config.JSON);
+        this.config = new Config(p.toFile(), Config.JSON);
     }
 
-    public PlayerSettingMap cache(String name){
-        if (!existInFile(name)){
+    public PlayerSettingMap cache(String name) {
+        if (!existInFile(name)) {
             PlayerSettingMap entry = PlayerSettingMap
                     .builder()
                     .fireMode(PlayerSettingMap.FireMode.MANUAL)
                     .openTrajectoryParticle(true)
                     .openMuzzleParticle(true)
                     .build();
-            settings.put(name,entry);
+            settings.put(name, entry);
             return entry;
         }
         Map playerSetting = (Map) config.get(name);
         PlayerSettingMap e = PlayerSettingMap
                 .builder()
-                .fireMode(PlayerSettingMap.FireMode.values()[((Double)playerSetting.get("fireMode")).intValue()])
+                .fireMode(PlayerSettingMap.FireMode.values()[((Double) playerSetting.get("fireMode")).intValue()])
                 .openTrajectoryParticle((Boolean) playerSetting.get("openTrajectoryParticle"))
                 .openMuzzleParticle((Boolean) playerSetting.get("openMuzzleParticle"))
                 .build();
-        settings.put(name,e);
+        settings.put(name, e);
         return e;
     }
 
-    public void write(String name,PlayerSettingMap entry){
-        config.set(name,entry.getMap());
+    public void write(String name, PlayerSettingMap entry) {
+        config.set(name, entry.getMap());
         config.save();
     }
 
-    public void writeAll(){
+    public void writeAll() {
         for (Map.Entry<String, PlayerSettingMap> e : getSettings().entrySet())
-            write(e.getKey(),e.getValue());
+            write(e.getKey(), e.getValue());
     }
 
-    public boolean existInFile(String name){
+    public boolean existInFile(String name) {
         return config.exists(name);
     }
 
-    public void close(){
+    public void close() {
         writeAll();
     }
 }

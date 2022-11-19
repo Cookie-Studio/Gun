@@ -83,13 +83,13 @@ public class GunData {
         this.fireSound = gunName + "_fire";
         this.magInSound = gunName + "_magin";
         this.magOutSound = gunName + "_magout";
-        this.reloadAnimationFP = "animation."+ this.gunName + ".first_person.reload";
-        this.reloadAnimationTP = "animation."+ this.gunName + ".third_person.reload";
+        this.reloadAnimationFP = "animation." + this.gunName + ".first_person.reload";
+        this.reloadAnimationTP = "animation." + this.gunName + ".third_person.reload";
         this.animationControllerFP = "controller.animation." + this.gunName + ".first_person";
         this.animationControllerTP = "controller.animation." + this.gunName + ".third_person";
     }
 
-    public void fire(Player player,ItemGunBase gunType) {
+    public void fire(Player player, ItemGunBase gunType) {
         SoundUtil.playSound(player, this.getFireSound(), 1.0F, 1.0F);
         player.shakeCamera((float) fireSwingIntensity, 0.1F, CameraShakePacket.CameraShakeType.ROTATIONAL, CameraShakePacket.CameraShakeAction.ADD);
         if (player.isSprinting()) {
@@ -104,16 +104,16 @@ public class GunData {
                 .filter(p -> GunPlugin.getInstance().getPlayerSettingPool().getSettings().get(p.getName()).isOpenTrajectoryParticle())
                 .collect(Collectors.toList())
                 .toArray(new Player[0]);
-        if (gunType instanceof ItemGunM3){
+        if (gunType instanceof ItemGunM3) {
             Location location = player.clone();
-            for (int i = 1;i <= 10;i++){
+            for (int i = 1; i <= 10; i++) {
                 player.yaw += random.nextInt(11) - 5;
                 player.pitch += random.nextInt(11) - 5;
-                fireParticle.accept(player,showParticlePlayers);
-                player.setRotation(location.getYaw(),location.getPitch());
+                fireParticle.accept(player, showParticlePlayers);
+                player.setRotation(location.getYaw(), location.getPitch());
             }
-        }else {
-            fireParticle.accept(player,showParticlePlayers);
+        } else {
+            fireParticle.accept(player, showParticlePlayers);
         }
         if (recoil != 0) {
             Vector3 vector3 = getRecoilPos(player, recoil);
@@ -130,7 +130,7 @@ public class GunData {
         SoundUtil.playSound(player, magInSound, 1.0F, 1.0F);
     }
 
-    public void emptyGun(Player player){
+    public void emptyGun(Player player) {
         SoundUtil.playSound(player, emptyGunSound, 1.0F, 1.0F);
     }
 
@@ -141,7 +141,7 @@ public class GunData {
     }
 
 
-    public void playReloadAnimation(Player player){
+    public void playReloadAnimation(Player player) {
         AnimateEntityPacket packetTP = new AnimateEntityPacket();
         packetTP.setAnimation(reloadAnimationTP);
         packetTP.setNextState("");
@@ -178,17 +178,31 @@ public class GunData {
         player.addEffect(effect);
     }
 
-    private class FireParticle implements BiConsumer<Position,Player[]> {
+    private class FireParticle implements BiConsumer<Position, Player[]> {
+        private static void sendParticle(String identifier, Position pos, Player[] showPlayers) {
+            Arrays.stream(showPlayers).forEach(player -> {
+                if (!player.isOnline())
+                    return;
+                SpawnParticleEffectPacket packet = new SpawnParticleEffectPacket();
+                packet.identifier = identifier;
+                packet.dimensionId = pos.getLevel().getDimension();
+                packet.position = pos.asVector3f();
+                try {
+                    player.dataPacket(packet);
+                } catch (Throwable t) {
+                }
+            });
+        }
+
         @Override
-        public void accept(Position pos,Player[] showPlayers) {
-            if (!(pos instanceof Player)){
+        public void accept(Position pos, Player[] showPlayers) {
+            if (!(pos instanceof Player player)) {
                 return;
             }
-            Player player = (Player)pos;
             Location pos1;
-            if (player.isSneaking()){
-                pos1 = player.getLocation().add(0,-0.15,0);
-            }else{
+            if (player.isSneaking()) {
+                pos1 = player.getLocation().add(0, -0.15, 0);
+            } else {
                 pos1 = player;
             }
             Map<String, List<Position>> map = new ConcurrentHashMap<>();
@@ -200,8 +214,8 @@ public class GunData {
             Block blocked = null;
             Position blockedPos = null;
             for (int i = 0; i <= range * 20; i++) {
-                Position lastAmmoPos = Position.fromObject(face.addToPos(pos1).add(0, 1.62, 0),pos1.level);
-                Position ammoPos = Position.fromObject(face.extend(0.05).addToPos(pos1).add(0, 1.62, 0),pos1.level);
+                Position lastAmmoPos = Position.fromObject(face.addToPos(pos1).add(0, 1.62, 0), pos1.level);
+                Position ammoPos = Position.fromObject(face.extend(0.05).addToPos(pos1).add(0, 1.62, 0), pos1.level);
                 if (!ammoPos.getLevelBlock().canPassThrough()) {
                     blocked = ammoPos.getLevelBlock();
                     blockedPos = lastAmmoPos.clone();
@@ -227,7 +241,7 @@ public class GunData {
                 });
             });
             hitMap.keySet().stream().forEach(entity -> {
-                EntityDamageByEntityEvent event = new EntityDamageByEntityEvent(player,entity, EntityDamageEvent.DamageCause.ENTITY_ATTACK,(float)hitDamage,0F);
+                EntityDamageByEntityEvent event = new EntityDamageByEntityEvent(player, entity, EntityDamageEvent.DamageCause.ENTITY_ATTACK, (float) hitDamage, 0F);
                 event.setAttackCooldown(0);
                 entity.attack(event);
                 hitParticleList.add(ammoMap.get(hitMap.get(entity)));
@@ -235,33 +249,19 @@ public class GunData {
             for (Position hitPos : hitParticleList) {
                 hitPos.getLevel().addParticle(new DestroyBlockParticle(hitPos, Block.get(152)));
             }
-            if(blocked != null)
-                blocked.getLevel().addParticle(new DestroyBlockParticle(blockedPos,blocked));
+            if (blocked != null)
+                blocked.getLevel().addParticle(new DestroyBlockParticle(blockedPos, blocked));
             map.put(particle, ammoParticleList);
-            Position fireSmokePos = Position.fromObject(BVector3.fromLocation(pos1, 0.8).addToPos(pos1).add(0, 1.62, 0),pos1.level);
+            Position fireSmokePos = Position.fromObject(BVector3.fromLocation(pos1, 0.8).addToPos(pos1).add(0, 1.62, 0), pos1.level);
             if (GunPlugin.getInstance().getPlayerSettingPool().getSettings().get(player.getName()).isOpenMuzzleParticle())
-                sendParticle("minecraft:eyeofender_death_explode_particle",fireSmokePos,Server.getInstance().getOnlinePlayers().values().toArray(new Player[0]));
-            for (Map.Entry<String,List<Position>> entry : map.entrySet()){
+                sendParticle("minecraft:eyeofender_death_explode_particle", fireSmokePos, Server.getInstance().getOnlinePlayers().values().toArray(new Player[0]));
+            for (Map.Entry<String, List<Position>> entry : map.entrySet()) {
                 String particleName = entry.getKey();
                 Position[] particlePositions = entry.getValue().toArray(new Position[0]);
-                for (Position particlePosition : particlePositions){
-                    sendParticle(particleName,particlePosition,showPlayers);
+                for (Position particlePosition : particlePositions) {
+                    sendParticle(particleName, particlePosition, showPlayers);
                 }
             }
-        }
-
-        private static void sendParticle(String identifier, Position pos,Player[] showPlayers) {
-            Arrays.stream(showPlayers).forEach(player -> {
-                if (!player.isOnline())
-                    return;
-                SpawnParticleEffectPacket packet = new SpawnParticleEffectPacket();
-                packet.identifier = identifier;
-                packet.dimensionId = pos.getLevel().getDimension();
-                packet.position = pos.asVector3f();
-                try {
-                    player.dataPacket(packet);
-                }catch (Throwable t){}
-            });
         }
     }
 }

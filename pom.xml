@@ -6,7 +6,7 @@
 
     <groupId>cn.cookiestudio</groupId>
     <artifactId>Gun</artifactId>
-    <version>2.0.2-PNX</version>
+    <version>2.0.3-PNX</version>
 
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
@@ -51,9 +51,7 @@
         <dependency>
             <groupId>cn.powernukkitx</groupId>
             <artifactId>powernukkitx</artifactId>
-            <version>1.19.30-r1</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/lib/powernukkitx-1.19.30-r1.jar</systemPath>
+            <version>1.19.40-r3</version>
         </dependency>
 
         <!-- Annotations -->

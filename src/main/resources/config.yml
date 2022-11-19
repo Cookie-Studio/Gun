@@ -10,7 +10,7 @@ akm:
   recoil: 0.0
   fireSwingIntensity: 0.15
   fireSwingDuration: 0.1
-  particle: gun:fire
+  particle: minecraft:basic_crit_particle
 mk18:
   magSize: 30
   magName: mk18_mag
@@ -23,7 +23,7 @@ mk18:
   recoil: 0.0
   fireSwingIntensity: 0.1
   fireSwingDuration: 0.1
-  particle: gun:fire
+  particle: minecraft:basic_crit_particle
 m249:
   magSize: 100
   magName: m249_mag
@@ -36,7 +36,7 @@ m249:
   recoil: 0.0
   fireSwingIntensity: 0.08
   fireSwingDuration: 0.1
-  particle: gun:fire
+  particle: minecraft:basic_crit_particle
 taurus:
   magSize: 17
   magName: taurus_mag
@@ -49,7 +49,7 @@ taurus:
   recoil: 0.0
   fireSwingIntensity: 0.05
   fireSwingDuration: 0.1
-  particle: gun:fire
+  particle: minecraft:basic_crit_particle
 m3:
   magSize: 8
   magName: m3_ammo
@@ -62,7 +62,7 @@ m3:
   recoil: 0.0
   fireSwingIntensity: 0.3
   fireSwingDuration: 0.1
-  particle: gun:fire
+  particle: minecraft:basic_crit_particle
 mp5:
   magSize: 25
   magName: mp5_mag
@@ -75,7 +75,7 @@ mp5:
   recoil: 0.0
   fireSwingIntensity: 0.05
   fireSwingDuration: 0.1
-  particle: gun:fire
+  particle: minecraft:basic_crit_particle
 p90:
   magSize: 50
   magName: p90_mag
@@ -88,7 +88,7 @@ p90:
   recoil: 0.0
   fireSwingIntensity: 0.065
   fireSwingDuration: 0.1
-  particle: gun:fire
+  particle: minecraft:basic_crit_particle
 awp:
   magSize: 10
   magName: awp_mag
@@ -101,7 +101,7 @@ awp:
   recoil: 0.0
   fireSwingIntensity: 0.25
   fireSwingDuration: 0.1
-  particle: gun:fire
+  particle: minecraft:basic_crit_particle
 barrett:
   magSize: 10
   magName: barrett_mag
@@ -114,4 +114,4 @@ barrett:
   recoil: 0.0
   fireSwingIntensity: 0.2
   fireSwingDuration: 0.1
-  particle: gun:fire
+  particle: minecraft:basic_crit_particle

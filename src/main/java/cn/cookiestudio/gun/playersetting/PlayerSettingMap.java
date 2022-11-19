@@ -16,17 +16,17 @@ public class PlayerSettingMap {
     private boolean openTrajectoryParticle = true;
     private boolean openMuzzleParticle = true;
 
-    public Map<String,Object> getMap(){
-        Map<String,Object> map = new HashMap<>();
+    public Map<String, Object> getMap() {
+        Map<String, Object> map = new HashMap<>();
 
-        map.put("fireMode",this.fireMode.ordinal());
-        map.put("openTrajectoryParticle",this.openTrajectoryParticle);
-        map.put("openMuzzleParticle",this.openMuzzleParticle);
+        map.put("fireMode", this.fireMode.ordinal());
+        map.put("openTrajectoryParticle", this.openTrajectoryParticle);
+        map.put("openMuzzleParticle", this.openMuzzleParticle);
 
         return map;
     }
 
-    public enum FireMode{
+    public enum FireMode {
         AUTO,
         MANUAL
     }

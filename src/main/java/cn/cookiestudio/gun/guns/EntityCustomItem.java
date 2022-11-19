@@ -19,18 +19,11 @@ import static cn.nukkit.network.protocol.SetEntityLinkPacket.TYPE_PASSENGER;
 public class EntityCustomItem extends EntityItem implements CustomEntity {
 
     public final static int NETWORK_ID = 0;
-
-    @Override
-    public int getNetworkId() {
-        return NETWORK_ID;
-    }
-
     public final static CustomEntityDefinition DEFINITION = CustomEntityDefinition.builder()
             .identifier("pixelpoly:firearm_item")
             .spawnEgg(false)
             .summonable(true)
             .build();
-
 
     public EntityCustomItem(FullChunk chunk, CompoundTag nbt, int skinId, float scale) {
         super(chunk, nbt.putInt("skinId", skinId));
@@ -38,13 +31,15 @@ public class EntityCustomItem extends EntityItem implements CustomEntity {
     }
 
     @Override
+    public int getNetworkId() {
+        return NETWORK_ID;
+    }
+
+    @Override
     protected void initEntity() {
         super.initEntity();
         this.setDataProperty(new IntEntityData(DATA_SKIN_ID, namedTag.getInt("skinId")));
     }
-
-
-
 
     @Override
     public CustomEntityDefinition getDefinition() {
