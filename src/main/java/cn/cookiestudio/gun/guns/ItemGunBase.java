@@ -5,9 +5,11 @@ import cn.cookiestudio.gun.GunPlugin;
 import cn.cookiestudio.gun.playersetting.PlayerSettingMap;
 import cn.nukkit.Player;
 import cn.nukkit.Server;
+import cn.nukkit.entity.EntityHuman;
 import cn.nukkit.entity.item.EntityItem;
 import cn.nukkit.event.EventHandler;
 import cn.nukkit.event.EventPriority;
+import cn.nukkit.event.entity.EntityInteractEvent;
 import cn.nukkit.event.entity.ItemSpawnEvent;
 import cn.nukkit.event.player.PlayerAnimationEvent;
 import cn.nukkit.event.player.PlayerInteractEvent;
@@ -141,6 +143,28 @@ public abstract class ItemGunBase extends ItemCustomEdible {
         return null;
     }
 
+    public GunInteractAction interact(EntityHuman entityHuman) {
+        if (GunPlugin.getInstance().getCoolDownTimer().isCooling(entityHuman)) {
+            return GunInteractAction.COOLING;
+        }
+        ItemGunBase itemGun = (ItemGunBase) entityHuman.getInventory().getItemInHand();
+        if (itemGun.getAmmoCount() > 0) {
+            itemGun.getGunData().fire(entityHuman, itemGun);
+            itemGun.setAmmoCount(itemGun.getAmmoCount() - 1);
+            entityHuman.getInventory().setItem(entityHuman.getInventory().getHeldItemIndex(), itemGun);
+            GunPlugin.getInstance().getCoolDownTimer().addCoolDown(entityHuman, (int) (itemGun.getGunData().getFireCoolDown() * 20), () -> {
+            }, () -> CoolDownTimer.Operator.NO_ACTION, CoolDownTimer.Type.FIRECOOLDOWN);
+            return GunInteractAction.FIRE;
+        }
+        if (itemGun.getAmmoCount() == 0) {//todo:debug
+            if (itemGun.reload(entityHuman))
+                return GunInteractAction.RELOAD;
+            else
+                return GunInteractAction.EMPTY_GUN;
+        }
+        return null;
+    }
+
     public boolean reload(Player player) {
         CoolDownTimer coolDownTimer = GunPlugin.getInstance().getCoolDownTimer();
         if (coolDownTimer.isCooling(player)) {
@@ -171,6 +195,36 @@ public abstract class ItemGunBase extends ItemCustomEdible {
             player.sendMessage("§creload interrupt!");
             return CoolDownTimer.Operator.INTERRUPT;
         }, CoolDownTimer.Type.RELOAD);
+        return true;
+    }
+
+    public boolean reload(EntityHuman entityHuman) {
+        CoolDownTimer coolDownTimer = GunPlugin.getInstance().getCoolDownTimer();
+        if (coolDownTimer.isCooling(entityHuman)) {
+            CoolDownTimer.CoolDown coolDown = coolDownTimer.getCoolDownMap().get(entityHuman);
+            if (coolDown.getType() == CoolDownTimer.Type.RELOAD)
+                coolDownTimer.interrupt(entityHuman);
+            return false;
+        }
+        if (!entityHuman.getInventory().contains(Item.fromString("gun:" + this.getGunData().getMagName()))) {
+            this.getGunData().emptyGun(entityHuman);
+            return false;
+        }
+        this.getGunData().startReload(entityHuman);
+        GunPlugin.getInstance().getCoolDownTimer().addCoolDown(entityHuman, (int) (this.getGunData().getReloadTime() * 20), () -> {
+            this.getGunData().reloadFinish(entityHuman);
+            this.setAmmoCount(this.getGunData().getMagSize());
+            entityHuman.getInventory().setItem(entityHuman.getInventory().getHeldItemIndex(), this);
+            for (Map.Entry<Integer, Item> entry : entityHuman.getInventory().getContents().entrySet()) {
+                Item item = entry.getValue();
+                int slot = entry.getKey();
+                if (item.equals(Item.fromString("gun:" + this.getGunData().getMagName()))) {//todo:debug
+                    item.setCount(item.count - 1);
+                    entityHuman.getInventory().setItem(slot, item);
+                    break;
+                }
+            }
+        }, () -> CoolDownTimer.Operator.INTERRUPT, CoolDownTimer.Type.RELOAD);
         return true;
     }
 
@@ -233,6 +287,15 @@ public abstract class ItemGunBase extends ItemCustomEdible {
         public void onPlayerInteract(PlayerInteractEvent event) {
             if (event.getPlayer().getInventory().getItemInHand() instanceof ItemGunBase itemGun && (event.getAction() == PlayerInteractEvent.Action.RIGHT_CLICK_AIR || event.getAction() == PlayerInteractEvent.Action.RIGHT_CLICK_BLOCK)) {
                 itemGun.interact(event.getPlayer());
+            }
+        }
+
+        @EventHandler
+        public void onEntityInteract(EntityInteractEvent event) {
+            if (event.getEntity() instanceof EntityHuman human) {
+                if (human.getInventory().getItemInHand() instanceof ItemGunBase itemGun) {
+                    itemGun.interact(human);
+                }
             }
         }
 

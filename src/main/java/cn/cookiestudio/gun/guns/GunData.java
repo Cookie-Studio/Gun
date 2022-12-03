@@ -7,6 +7,7 @@ import cn.nukkit.Player;
 import cn.nukkit.Server;
 import cn.nukkit.block.Block;
 import cn.nukkit.entity.Entity;
+import cn.nukkit.entity.EntityHuman;
 import cn.nukkit.event.entity.EntityDamageByEntityEvent;
 import cn.nukkit.event.entity.EntityDamageEvent;
 import cn.nukkit.level.Location;
@@ -121,25 +122,54 @@ public class GunData {
         }
     }
 
-    public void startReload(Player player) {
-//        playReloadAnimation(player);
-        SoundUtil.playSound(player, magOutSound, 1.0F, 1.0F);
+    public void fire(EntityHuman entityHuman, ItemGunBase gunType) {
+        SoundUtil.playSound(entityHuman, this.getFireSound(), 1.0F, 1.0F);
+        if (entityHuman.isSprinting()) {
+            entityHuman.setSprinting(false);
+        }
+        Player[] showParticlePlayers = Server
+                .getInstance()
+                .getOnlinePlayers()
+                .values()
+                .stream()
+                .filter(p -> GunPlugin.getInstance().getPlayerSettingPool().getSettings().get(p.getName()).isOpenTrajectoryParticle())
+                .collect(Collectors.toList())
+                .toArray(new Player[0]);
+        if (gunType instanceof ItemGunM3) {
+            Location location = entityHuman.clone();
+            for (int i = 1; i <= 10; i++) {
+                entityHuman.yaw += random.nextInt(11) - 5;
+                entityHuman.pitch += random.nextInt(11) - 5;
+                fireParticle.accept(entityHuman, showParticlePlayers);
+                entityHuman.setRotation(location.getYaw(), location.getPitch());
+            }
+        } else {
+            fireParticle.accept(entityHuman, showParticlePlayers);
+        }
+        if (recoil != 0) {
+            Vector3 vector3 = getRecoilPos(entityHuman, recoil);
+            entityHuman.setMotion(vector3);
+        }
     }
 
-    public void reloadFinish(Player player) {
-        SoundUtil.playSound(player, magInSound, 1.0F, 1.0F);
+    public void startReload(EntityHuman entityHuman) {
+//        playReloadAnimation(entityHuman);
+        SoundUtil.playSound(entityHuman, magOutSound, 1.0F, 1.0F);
     }
 
-    public void emptyGun(Player player) {
-        SoundUtil.playSound(player, emptyGunSound, 1.0F, 1.0F);
+    public void reloadFinish(EntityHuman entityHuman) {
+        SoundUtil.playSound(entityHuman, magInSound, 1.0F, 1.0F);
     }
 
-    public Vector3 getRecoilPos(Player player, double length) {
-        Vector3 pos = BVector3.fromLocation(player, length).addAngle(180, 0).getPos();
-        pos.y = player.y;
+    public void emptyGun(EntityHuman entityHuman) {
+        SoundUtil.playSound(entityHuman, emptyGunSound, 1.0F, 1.0F);
+    }
+
+    public Vector3 getRecoilPos(EntityHuman entityHuman, double length) {
+        Vector3 pos = BVector3.fromLocation(entityHuman, length).addAngle(180, 0).getPos();
+        pos.y = entityHuman.y;
         return pos;
     }
-
 
     public void playReloadAnimation(Player player) {
         AnimateEntityPacket packetTP = new AnimateEntityPacket();
@@ -189,21 +219,21 @@ public class GunData {
                 packet.position = pos.asVector3f();
                 try {
                     player.dataPacket(packet);
-                } catch (Throwable t) {
+                } catch (Throwable ignored) {
                 }
             });
         }
 
         @Override
         public void accept(Position pos, Player[] showPlayers) {
-            if (!(pos instanceof Player player)) {
+            if (!(pos instanceof EntityHuman entityHuman)) {
                 return;
             }
             Location pos1;
-            if (player.isSneaking()) {
-                pos1 = player.getLocation().add(0, -0.15, 0);
+            if (entityHuman.isSneaking()) {
+                pos1 = entityHuman.getLocation().add(0, -0.15, 0);
             } else {
-                pos1 = player;
+                pos1 = entityHuman;
             }
             Map<String, List<Position>> map = new ConcurrentHashMap<>();
             Map<Integer, Position> ammoMap = new ConcurrentHashMap<>();
@@ -229,7 +259,7 @@ public class GunData {
                 if (chunk == null)
                     return;
                 chunk.getEntities().values().stream().forEach(entity -> {
-                    if (entity.getBoundingBox().isVectorInside(entry.getValue()) && !entity.equals(player)) {
+                    if (entity.getBoundingBox().isVectorInside(entry.getValue()) && !entity.equals(entityHuman)) {
                         if (hitMap.containsKey(entity)) {
                             if (hitMap.get(entity) > entry.getKey()) {
                                 hitMap.put(entity, entry.getKey());
@@ -241,7 +271,7 @@ public class GunData {
                 });
             });
             hitMap.keySet().stream().forEach(entity -> {
-                EntityDamageByEntityEvent event = new EntityDamageByEntityEvent(player, entity, EntityDamageEvent.DamageCause.ENTITY_ATTACK, (float) hitDamage, 0F);
+                EntityDamageByEntityEvent event = new EntityDamageByEntityEvent(entityHuman, entity, EntityDamageEvent.DamageCause.ENTITY_ATTACK, (float) hitDamage, 0F);
                 event.setAttackCooldown(0);
                 entity.attack(event);
                 hitParticleList.add(ammoMap.get(hitMap.get(entity)));
@@ -253,7 +283,8 @@ public class GunData {
                 blocked.getLevel().addParticle(new DestroyBlockParticle(blockedPos, blocked));
             map.put(particle, ammoParticleList);
             Position fireSmokePos = Position.fromObject(BVector3.fromLocation(pos1, 0.8).addToPos(pos1).add(0, 1.62, 0), pos1.level);
-            if (GunPlugin.getInstance().getPlayerSettingPool().getSettings().get(player.getName()).isOpenMuzzleParticle())
+            if (entityHuman instanceof Player &&
+                    GunPlugin.getInstance().getPlayerSettingPool().getSettings().get(entityHuman.getName()).isOpenMuzzleParticle())
                 sendParticle("minecraft:eyeofender_death_explode_particle", fireSmokePos, Server.getInstance().getOnlinePlayers().values().toArray(new Player[0]));
             for (Map.Entry<String, List<Position>> entry : map.entrySet()) {
                 String particleName = entry.getKey();
