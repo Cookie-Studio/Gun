@@ -206,24 +206,11 @@ public abstract class ItemGunBase extends ItemCustomEdible {
                 coolDownTimer.interrupt(entityHuman);
             return false;
         }
-        if (!entityHuman.getInventory().contains(Item.fromString("gun:" + this.getGunData().getMagName()))) {
-            this.getGunData().emptyGun(entityHuman);
-            return false;
-        }
         this.getGunData().startReload(entityHuman);
         GunPlugin.getInstance().getCoolDownTimer().addCoolDown(entityHuman, (int) (this.getGunData().getReloadTime() * 20), () -> {
             this.getGunData().reloadFinish(entityHuman);
             this.setAmmoCount(this.getGunData().getMagSize());
             entityHuman.getInventory().setItem(entityHuman.getInventory().getHeldItemIndex(), this);
-            for (Map.Entry<Integer, Item> entry : entityHuman.getInventory().getContents().entrySet()) {
-                Item item = entry.getValue();
-                int slot = entry.getKey();
-                if (item.equals(Item.fromString("gun:" + this.getGunData().getMagName()))) {//todo:debug
-                    item.setCount(item.count - 1);
-                    entityHuman.getInventory().setItem(slot, item);
-                    break;
-                }
-            }
         }, () -> CoolDownTimer.Operator.INTERRUPT, CoolDownTimer.Type.RELOAD);
         return true;
     }
