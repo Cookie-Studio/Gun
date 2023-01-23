@@ -43,7 +43,7 @@ public abstract class ItemGunBase extends ItemCustomEdible {
                         itemGun.getGunData().addWalkingSlownessEffect(player);
                     }
                     if (!GunPlugin.getInstance().getCoolDownTimer().isCooling(player) || GunPlugin.getInstance().getCoolDownTimer().getCoolDownMap().get(player).getType() != CoolDownTimer.Type.RELOAD) {
-                        if (GunPlugin.getInstance().getPlayerSettingPool().getSettings().containsKey(player.getName()) && GunPlugin.getInstance().getPlayerSettingPool().getSettings().get(player.getName()).getFireMode() == PlayerSettingMap.FireMode.AUTO) {
+                        if (GunPlugin.getInstance().getPlayerSettingPool().getPlayerSetting(player.getName()).getFireMode() == PlayerSettingMap.FireMode.AUTO) {
                             if (!GunPlugin.getInstance().getFireTask().firing(player)) {
                                 player.sendActionBar("<" + itemGun.getAmmoCount() + "/" + itemGun.getGunData().getMagSize() + ">\n§dAUTO MODE: §cOFF");
                             } else {
@@ -126,9 +126,7 @@ public abstract class ItemGunBase extends ItemCustomEdible {
         ItemGunBase itemGun = (ItemGunBase) player.getInventory().getItemInHand();
         if (itemGun.getAmmoCount() > 0) {
             itemGun.getGunData().fire(player, itemGun);
-            if (player.getGamemode() != 1) {
-                itemGun.setAmmoCount(itemGun.getAmmoCount() - 1);
-            }
+            itemGun.setAmmoCount(itemGun.getAmmoCount() - 1);
             player.getInventory().setItem(player.getInventory().getHeldItemIndex(), itemGun);
             GunPlugin.getInstance().getCoolDownTimer().addCoolDown(player, (int) (itemGun.getGunData().getFireCoolDown() * 20), () -> {
             }, () -> CoolDownTimer.Operator.NO_ACTION, CoolDownTimer.Type.FIRECOOLDOWN);
@@ -173,7 +171,7 @@ public abstract class ItemGunBase extends ItemCustomEdible {
                 coolDownTimer.interrupt(player);
             return false;
         }
-        if (!player.getInventory().contains(Item.fromString("gun:" + this.getGunData().getMagName()))) {
+        if (player.getGamemode() != Player.CREATIVE && !player.getInventory().contains(Item.fromString("gun:" + this.getGunData().getMagName()))) {
             this.getGunData().emptyGun(player);
             return false;
         }
@@ -182,13 +180,15 @@ public abstract class ItemGunBase extends ItemCustomEdible {
             this.getGunData().reloadFinish(player);
             this.setAmmoCount(this.getGunData().getMagSize());
             player.getInventory().setItem(player.getInventory().getHeldItemIndex(), this);
-            for (Map.Entry<Integer, Item> entry : player.getInventory().getContents().entrySet()) {
-                Item item = entry.getValue();
-                int slot = entry.getKey();
-                if (item.equals(Item.fromString("gun:" + this.getGunData().getMagName()))) {//todo:debug
-                    item.setCount(item.count - 1);
-                    player.getInventory().setItem(slot, item);
-                    break;
+            if (player.getGamemode() != Player.CREATIVE) {
+                for (Map.Entry<Integer, Item> entry : player.getInventory().getContents().entrySet()) {
+                    Item item = entry.getValue();
+                    int slot = entry.getKey();
+                    if (item.equals(Item.fromString("gun:" + this.getGunData().getMagName()))) {//todo:debug
+                        item.setCount(item.count - 1);
+                        player.getInventory().setItem(slot, item);
+                        break;
+                    }
                 }
             }
         }, () -> {
@@ -243,7 +243,7 @@ public abstract class ItemGunBase extends ItemCustomEdible {
         @EventHandler
         public void onPlayerAnimation(PlayerAnimationEvent event) {
             if (event.getAnimationType() == AnimatePacket.Action.SWING_ARM && event.getPlayer().getInventory().getItemInHand() instanceof ItemGunBase) {
-                if (GunPlugin.getInstance().getPlayerSettingPool().getSettings().get(event.getPlayer().getName()).getFireMode() == PlayerSettingMap.FireMode.AUTO) {
+                if (GunPlugin.getInstance().getPlayerSettingPool().getPlayerSetting(event.getPlayer().getName()).getFireMode() == PlayerSettingMap.FireMode.AUTO) {
                     GunPlugin.getInstance().getFireTask().changeState(event.getPlayer());
                 } else {
                     ((ItemGunBase) event.getPlayer().getInventory().getItemInHand()).reload(event.getPlayer());

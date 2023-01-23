@@ -97,7 +97,7 @@ public class GunCommand extends Command {
         }
         if (strings[0].equals("setting")) {
             BFormWindowCustom custom = new BFormWindowCustom("Settings");
-            PlayerSettingMap settings = GunPlugin.getInstance().getPlayerSettingPool().getSettings().get(player.getName());
+            PlayerSettingMap settings = GunPlugin.getInstance().getPlayerSettingPool().getPlayerSetting(player.getName());
             List<String> list = new ArrayList<>();
             list.add(PlayerSettingMap.FireMode.AUTO.name());
             list.add(PlayerSettingMap.FireMode.MANUAL.name());

@@ -7,7 +7,6 @@ import cn.nukkit.event.EventHandler;
 import cn.nukkit.event.Listener;
 import cn.nukkit.event.player.PlayerJoinEvent;
 import cn.nukkit.utils.Config;
-import lombok.Getter;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -15,7 +14,6 @@ import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 
-@Getter
 public class PlayerSettingPool {
 
     private Config config;
@@ -48,6 +46,13 @@ public class PlayerSettingPool {
         this.config = new Config(p.toFile(), Config.JSON);
     }
 
+    public PlayerSettingMap getPlayerSetting(String name) {
+        if (!settings.containsKey(name)) {
+            return cache(name);
+        }
+        return settings.get(name);
+    }
+
     public PlayerSettingMap cache(String name) {
         if (!existInFile(name)) {
             PlayerSettingMap entry = PlayerSettingMap
@@ -76,7 +81,7 @@ public class PlayerSettingPool {
     }
 
     public void writeAll() {
-        for (Map.Entry<String, PlayerSettingMap> e : getSettings().entrySet())
+        for (Map.Entry<String, PlayerSettingMap> e : settings.entrySet())
             write(e.getKey(), e.getValue());
     }
 
