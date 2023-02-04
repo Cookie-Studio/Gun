@@ -123,8 +123,7 @@ public class GunPlugin extends PluginBase {
                 ItemGunBase itemGun = stringClassMap.get(e.getKey()).newInstance();
                 Item.registerCustomItem(itemGun.getClass());
                 Item.registerCustomItem(itemGun.getItemMagObject().getClass());
-            } catch (InstantiationException | IllegalAccessException | NoSuchMethodException |
-                     InvocationTargetException exception) {
+            } catch (InstantiationException | IllegalAccessException exception) {
                 exception.printStackTrace();
             }
         });

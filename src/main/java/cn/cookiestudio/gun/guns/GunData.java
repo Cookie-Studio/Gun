@@ -166,7 +166,7 @@ public class GunData {
     }
 
     public Vector3 getRecoilPos(EntityHuman entityHuman, double length) {
-        Vector3 pos = BVector3.fromLocation(entityHuman, length).addAngle(180, 0).getPos();
+        Vector3 pos = BVector3.fromLocation(entityHuman, length).rotate(180, 0).addToPos();
         pos.y = entityHuman.y;
         return pos;
     }

@@ -18,9 +18,12 @@ import cn.nukkit.item.Item;
 import cn.nukkit.item.customitem.CustomItemDefinition;
 import cn.nukkit.item.customitem.ItemCustomEdible;
 import cn.nukkit.item.customitem.data.ItemCreativeCategory;
+import cn.nukkit.item.food.Food;
+import cn.nukkit.item.food.FoodNormal;
 import cn.nukkit.math.Vector3;
 import cn.nukkit.nbt.tag.CompoundTag;
 import cn.nukkit.network.protocol.AnimatePacket;
+import cn.nukkit.plugin.Plugin;
 import cn.nukkit.potion.Effect;
 import lombok.Getter;
 import lombok.Setter;
@@ -91,8 +94,11 @@ public abstract class ItemGunBase extends ItemCustomEdible {
     }
 
     @Override
-    public int getEatTick() {
-        return (int) (this.getGunData().getFireCoolDown() * 20);
+    public Map.Entry<Plugin, Food> getFood() {
+        return Map.entry(GunPlugin.getInstance(), new FoodNormal(0, 0F)
+                .addRelative(this.getNamespaceId(), 0, GunPlugin.getInstance())
+                .setEatingTickSupplier(() -> (int) this.getGunData().getFireCoolDown() * 20)
+        );
     }
 
     @Override
