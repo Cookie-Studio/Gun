@@ -1,2 +1,2 @@
 # Gun
-Gun plugin for Nukkit!
+Gun plugin for PowerNukkitX!
